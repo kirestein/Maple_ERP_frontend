@@ -1,0 +1,35 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Lista de Funcionários</mat-card-title>
+    <mat-card-subtitle>Gerenciamento de funcionários da Maple Bear</mat-card-subtitle>
+  </mat-card-header>
+  
+  <mat-card-content>
+    <div class="employee-list">
+      @for (employee of employees; track employee.id) {
+        <div class="employee-card">
+          <div class="employee-info">
+            <h3>{{ employee.name }}</h3>
+            <p>{{ employee.position }}</p>
+            <p>{{ employee.email }}</p>
+          </div>
+          <div class="employee-actions">
+            <button mat-icon-button color="primary" [routerLink]="['/employees/edit', employee.id]">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </mat-card-content>
+  
+  <mat-card-actions>
+    <button mat-raised-button color="primary" routerLink="/employees/new">
+      <mat-icon>add</mat-icon>
+      Novo Funcionário
+    </button>
+  </mat-card-actions>
+</mat-card>
