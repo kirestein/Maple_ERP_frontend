@@ -1,16 +1,16 @@
-import { Injectable } from \'@angular/core\';
-import { HttpClient } from \'@angular/common/http\';
-import { Observable } from \'rxjs\';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 // Import Employee model if needed for type hints, although FormData hides details
-// import { Employee } from \'../../shared/models/employee.model\';
+// import { Employee } from '../../shared/models/employee.model';
 
 @Injectable({
-  providedIn: \'root\'
+  providedIn: 'root'
 })
 export class EmployeeService {
   // Base URL for the backend API (adjust if needed)
-  private API_URL = \'http://localhost:4000/employees\'; // As specified by Mariana
+  private API_URL = 'http://localhost:4000/employees'; // As specified by Mariana
 
   constructor(private http: HttpClient) { }
 
@@ -31,7 +31,7 @@ export class EmployeeService {
    */
   getBadge(id: string | number): Observable<Blob> { // Accept string or number for ID
     return this.http.get(`${this.API_URL}/${id}/badge`, {
-      responseType: \'blob\' // Important: ensures the response is treated as a file blob
+      responseType: 'blob' // Important: ensures the response is treated as a file blob
     });
   }
 
@@ -42,10 +42,9 @@ export class EmployeeService {
    */
   getDocument(id: string | number): Observable<Blob> { // Accept string or number for ID
     return this.http.get(`${this.API_URL}/${id}/document`, {
-      responseType: \'blob\' // Important: ensures the response is treated as a file blob
+      responseType: 'blob' // Important: ensures the response is treated as a file blob
     });
   }
 
   // Add other methods later as needed (e.g., getEmployees, getEmployeeById, update, delete)
 }
-
