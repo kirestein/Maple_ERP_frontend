@@ -394,6 +394,11 @@ export class EmployeeFormComponent implements OnInit {
     }
   }
 
+  // Cancelar formulário e voltar à lista
+  cancel(): void {
+    this.router.navigate(['/employees']);
+  }
+
   // Preparar dados do funcionário para envio
   prepareEmployeeData(): Employee {
     const formValue = this.employeeForm.value;
