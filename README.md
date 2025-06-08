@@ -1,59 +1,109 @@
-# MapleErpFrontend
+# Maple Bear ERP - Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.0.0.
+Sistema ERP para gerenciamento escolar da Maple Bear.
 
-## Development server
+## 🚀 Como rodar o projeto
 
-To start a local development server, run:
+### Pré-requisitos
+- Node.js 18+ 
+- npm ou bun
 
+### Instalação
 ```bash
-ng serve
+npm install
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
+### Desenvolvimento
 ```bash
-ng generate component component-name
+npm start
+# ou
+npm run ng serve
+```
+Acesse http://localhost:4200
+
+### Build de produção
+```bash
+npm run build
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
+### Testes
 ```bash
-ng generate --help
+npm test
 ```
 
-## Building
-
-To build the project run:
-
+### Linting
 ```bash
-ng build
+npm run lint
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## 📁 Estrutura do projeto
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
+```
+src/
+├── app/
+│   ├── core/          # Serviços e utilitários centrais
+│   ├── shared/        # Componentes e modelos compartilhados  
+│   ├── modules/       # Módulos de funcionalidades
+│   │   └── employee/  # Módulo de funcionários
+│   └── ...
 ```
 
-## Running end-to-end tests
+## 🛠 Tecnologias
 
-For end-to-end (e2e) testing, run:
+- Angular 20
+- Angular Material
+- TypeScript
+- SCSS
+- ngx-mask
 
-```bash
-ng e2e
-```
+## 📝 Convenções
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+### Commits
+Seguimos o padrão [Conventional Commits](https://www.conventionalcommits.org/pt-br/):
 
-## Additional Resources
+- `feat:` nova funcionalidade
+- `fix:` correção de bug
+- `docs:` documentação
+- `style:` formatação
+- `refactor:` refatoração
+- `test:` testes
+- `chore:` tarefas de manutenção
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+### Branches
+- `main` - branch principal
+- `feature/nome-da-feature` - novas funcionalidades
+- `fix/nome-do-fix` - correções
+- `hotfix/nome-do-hotfix` - correções urgentes
+
+## 🏗 Development Workflow
+
+1. Clone o repositório
+2. Instale dependências: `npm install`
+3. Crie uma branch: `git checkout -b feature/minha-feature`
+4. Desenvolva e teste
+5. Commit: `git commit -m "feat: adicionar nova funcionalidade"`
+6. Push: `git push origin feature/minha-feature`
+7. Abra um Pull Request
+
+## 📋 Scripts disponíveis
+
+- `npm start` - Servidor de desenvolvimento
+- `npm run build` - Build de produção
+- `npm run watch` - Build em modo watch
+- `npm test` - Executar testes
+- `npm run lint` - Verificação de tipos TypeScript
+
+## 🎯 Funcionalidades
+
+### Módulo de Funcionários
+- ✅ Cadastro de funcionários
+- ✅ Listagem de funcionários
+- ✅ Formulário com validações
+- ✅ Upload de foto
+- ✅ Gestão de dependentes
+- ✅ Contatos de emergência
+
+### Em desenvolvimento
+- 🔄 Módulo financeiro
+- 🔄 Relatórios
+- 🔄 Dashboard

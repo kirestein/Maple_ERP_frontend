@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "lint": "npx tsc --noEmit && echo 'TypeScript compilation check passed!'"
   },
   "private": true,
   "dependencies": {
