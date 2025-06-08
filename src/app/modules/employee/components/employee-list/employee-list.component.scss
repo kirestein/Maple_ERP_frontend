@@ -1,0 +1,37 @@
+.employee-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.employee-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  
+  &:hover {
+    background-color: #f0f0f0;
+  }
+}
+
+.employee-info {
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+  }
+  
+  p {
+    margin: 0 0 4px 0;
+    color: #666;
+  }
+}
+
+.employee-actions {
+  display: flex;
+  gap: 8px;
+}
