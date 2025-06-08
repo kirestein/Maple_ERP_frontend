@@ -37,6 +37,7 @@ import {
 // Diretivas de Máscara (ngx-mask)
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
+
 @Component({
   selector: 'app-employee-form',
   standalone: true,
@@ -455,5 +456,6 @@ export class EmployeeFormComponent implements OnInit {
     // Restaurar valores padrão
     this.employeeForm.get('basicInfo.maritalStatus')?.setValue(EmployeeMaritalStatus.SOLTEIRO);
     this.employeeForm.get('professionalInfo.status')?.setValue(EmployeeContractStatus.ACTIVE);
+
   }
 }
