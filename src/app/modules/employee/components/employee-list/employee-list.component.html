@@ -5,25 +5,57 @@
   </mat-card-header>
   
   <mat-card-content>
-    <div class="employee-list">
-      @for (employee of employees; track employee.id) {
-        <div class="employee-card">
-          <div class="employee-info">
-            <h3>{{ employee.name }}</h3>
-            <p>{{ employee.position }}</p>
-            <p>{{ employee.email }}</p>
+    <!-- Loading spinner -->
+    @if (isLoading) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Carregando funcionários...</p>
+      </div>
+    }
+    
+    <!-- Error message -->
+    @if (error && !isLoading) {
+      <div class="error-container">
+        <mat-icon color="warn">error</mat-icon>
+        <p>{{ error }}</p>
+        <button mat-button color="primary" (click)="loadEmployees()">Tentar novamente</button>
+      </div>
+    }
+    
+    <!-- Empty state -->
+    @if (employees.length === 0 && !isLoading && !error) {
+      <div class="empty-container">
+        <mat-icon>people_outline</mat-icon>
+        <p>Nenhum funcionário cadastrado</p>
+        <button mat-raised-button color="primary" routerLink="/employees/new">
+          <mat-icon>add</mat-icon>
+          Cadastrar Funcionário
+        </button>
+      </div>
+    }
+    
+    <!-- Employee list -->
+    @if (employees.length > 0 && !isLoading) {
+      <div class="employee-list">
+        @for (employee of employees; track employee.id) {
+          <div class="employee-card">
+            <div class="employee-info">
+              <h3>{{ employee.fullName }}</h3>
+              <p>{{ employee.jobPosition }}</p>
+              <p>{{ employee.email }}</p>
+            </div>
+            <div class="employee-actions">
+              <button mat-icon-button color="primary" [routerLink]="['/employees/edit', employee.id]">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteEmployee(employee.id!)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
           </div>
-          <div class="employee-actions">
-            <button mat-icon-button color="primary" [routerLink]="['/employees/edit', employee.id]">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="warn">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </div>
-        </div>
-      }
-    </div>
+        }
+      </div>
+    }
   </mat-card-content>
   
   <mat-card-actions>

@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } fr
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { finalize } from 'rxjs';
 
 // Material Imports
 import { MatStepperModule } from '@angular/material/stepper';
@@ -19,6 +20,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 // Serviços e Modelos
 import { EmployeeService } from '../../../../core/services/employee.service';
@@ -58,6 +60,7 @@ import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
     MatDividerModule,
     MatExpansionModule,
     MatTooltipModule,
+    MatProgressSpinnerModule,
     NgxMaskDirective
   ],
   providers: [
@@ -71,6 +74,9 @@ export class EmployeeFormComponent implements OnInit {
   isEditMode = false;
   employeeId: string | null = null;
   selectedPhotoUrl: string | ArrayBuffer | null = null;
+  isLoading = false;
+  isSubmitting = false;
+  error: string | null = null;
   
   // Enums para os selects
   genderOptions = Object.values(EmployeeGender);
@@ -104,8 +110,7 @@ export class EmployeeFormComponent implements OnInit {
       this.employeeId = params.get('id');
       if (this.employeeId) {
         this.isEditMode = true;
-        // Aqui carregaríamos os dados do funcionário para edição
-        // this.loadEmployeeData(this.employeeId);
+        this.loadEmployeeData(this.employeeId);
       }
     });
 
@@ -234,6 +239,189 @@ export class EmployeeFormComponent implements OnInit {
       // Contatos de Emergência
       emergencyContacts: this.fb.array([this.createEmergencyContactForm()]),
     });
+  }
+
+  // Carregar dados do funcionário para edição
+  loadEmployeeData(id: string): void {
+    this.isLoading = true;
+    this.error = null;
+    
+    this.employeeService.getEmployeeById(id)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe({
+        next: (employee) => {
+          this.populateForm(employee);
+          if (employee.employeePhoto) {
+            this.selectedPhotoUrl = employee.employeePhoto;
+          }
+        },
+        error: (err) => {
+          this.error = err.message || 'Erro ao carregar dados do funcionário';
+          this.snackBar.open(this.error, 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar']
+          });
+        }
+      });
+  }
+
+  // Preencher formulário com dados do funcionário
+  populateForm(employee: Employee): void {
+    // Informações Básicas
+    this.employeeForm.get('basicInfo')?.patchValue({
+      fullName: employee.fullName,
+      email: employee.email,
+      tagName: employee.tagName,
+      tagLastName: employee.tagLastName,
+      birthday: employee.birthday ? new Date(employee.birthday) : null,
+      gender: employee.gender,
+      maritalStatus: employee.maritalStatus,
+      skinColor: employee.skinColor,
+      graduation: employee.graduation,
+      naturalness: employee.naturalness,
+      nationality: employee.nationality,
+      fatherName: employee.fatherName,
+      motherName: employee.motherName,
+    });
+
+    // Documentação
+    this.employeeForm.get('documents')?.patchValue({
+      cpf: employee.cpf,
+      rg: employee.rg,
+      rgEmitter: employee.rgEmitter,
+      rgEmissionDate: employee.rgEmissionDate ? new Date(employee.rgEmissionDate) : null,
+      pisPasep: employee.pisPasep,
+      voterTitle: employee.voterTitle,
+      voterZone: employee.voterZone,
+      voterSection: employee.voterSection,
+      voterEmission: employee.voterEmission ? new Date(employee.voterEmission) : null,
+      militaryCertificate: employee.militaryCertificate,
+      ctps: employee.ctps,
+      ctpsSerie: employee.ctpsSerie,
+      driversLicense: employee.driversLicense,
+      driversLicenseNumber: employee.driversLicenseNumber,
+      driversLicenseCategory: employee.driversLicenseCategory,
+      driversLicenseEmissionDate: employee.driversLicenseEmissionDate ? new Date(employee.driversLicenseEmissionDate) : null,
+      driversLicenseExpirationDate: employee.driversLicenseExpirationDate ? new Date(employee.driversLicenseExpirationDate) : null,
+    });
+
+    // Contato e Endereço
+    this.employeeForm.get('contactAddress')?.patchValue({
+      phone: employee.phone,
+      mobile: employee.mobile,
+      cep: employee.cep,
+      employeeAddress: employee.employeeAddress,
+      employeeAddressNumber: employee.employeeAddressNumber,
+      employeeAddressComplement: employee.employeeAddressComplement,
+      employeeNeighborhood: employee.employeeNeighborhood,
+      employeeAddressCity: employee.employeeAddressCity,
+      employeeAddressState: employee.employeeAddressState,
+    });
+
+    // Informações Familiares
+    this.employeeForm.get('familyInfo')?.patchValue({
+      partnerName: employee.partnerName,
+      partnerCpf: employee.partnerCpf,
+      partnerBirthday: employee.partnerBirthday ? new Date(employee.partnerBirthday) : null,
+      partnerRg: employee.partnerRg,
+    });
+
+    // Limpar e adicionar dependentes
+    const dependentsArray = this.employeeForm.get('familyInfo.dependents') as FormArray;
+    dependentsArray.clear();
+    
+    if (employee.employeeDependent && employee.employeeDependent.length > 0) {
+      employee.employeeDependent.forEach(dependent => {
+        const dependentForm = this.createDependentForm();
+        dependentForm.patchValue({
+          dependentName: dependent.dependentName,
+          dependentCpf: dependent.dependentCpf,
+          dependentBirthday: dependent.dependentBirthday ? new Date(dependent.dependentBirthday) : null,
+          dependentRelationship: dependent.dependentRelationship,
+        });
+        dependentsArray.push(dependentForm);
+      });
+    }
+
+    // Informações Profissionais
+    this.employeeForm.get('professionalInfo')?.patchValue({
+      jobPosition: employee.jobPosition,
+      jobFunctions: employee.jobFunctions,
+      admissionDate: employee.admissionDate ? new Date(employee.admissionDate) : null,
+      period: employee.period,
+      contractExpirationDate: employee.contractExpirationDate ? new Date(employee.contractExpirationDate) : null,
+      dailyHours: employee.dailyHours,
+      weeklyHours: employee.weeklyHours,
+      monthlyHours: employee.monthlyHours,
+      weeklyClasses: employee.weeklyClasses,
+      hasAccumulate: employee.hasAccumulate,
+      hasAccumulateCompany: employee.hasAccumulateCompany,
+      status: employee.status,
+    });
+
+    // Informações Financeiras
+    this.employeeForm.get('financialInfo')?.patchValue({
+      salary: employee.salary,
+      salaryBank: employee.salaryBank,
+      salaryAgency: employee.salaryAgency,
+      salaryAccount: employee.salaryAccount,
+      salaryAccountType: employee.salaryAccountType,
+      familySalary: employee.familySalary,
+      parenting: employee.parenting,
+      IRPF: employee.IRPF,
+    });
+
+    // Benefícios e Adicionais
+    this.employeeForm.get('benefits')?.patchValue({
+      mealValue: employee.mealValue,
+      transport: employee.transport,
+      trasportType: employee.trasportType,
+      transportValue: employee.transportValue,
+      healthPlan: employee.healthPlan,
+      healthCardNumber: employee.healthCardNumber,
+      deficiency: employee.deficiency,
+      deficiencyDescription: employee.deficiencyDescription,
+    });
+
+    // Informações de Estágio/Faculdade
+    this.employeeForm.get('collegeInfo')?.patchValue({
+      college: employee.college,
+      course: employee.course,
+      trainingPeriod: employee.trainingPeriod,
+      ra: employee.ra,
+      collegeCep: employee.collegeCep,
+      traineeAddress: employee.traineeAddress,
+      traineeAddressNumber: employee.traineeAddressNumber,
+      traineeAddressNeighborhood: employee.traineeAddressNeighborhood,
+      traineeAddressComplement: employee.traineeAddressComplement,
+      traineeAddressCity: employee.traineeAddressCity,
+      traineeAddressState: employee.traineeAddressState,
+      lifInsurancePolicy: employee.lifInsurancePolicy,
+    });
+
+    // Limpar e adicionar contatos de emergência
+    const contactsArray = this.employeeForm.get('emergencyContacts') as FormArray;
+    contactsArray.clear();
+    
+    if (employee.employeeContact && employee.employeeContact.length > 0) {
+      employee.employeeContact.forEach(contact => {
+        const contactForm = this.createEmergencyContactForm();
+        contactForm.patchValue({
+          contactName: contact.contactName,
+          contactPhone: contact.contactPhone,
+          contactEmail: contact.contactEmail,
+          contactRelationship: contact.contactRelationship,
+        });
+        contactsArray.push(contactForm);
+      });
+    } else {
+      // Adicionar pelo menos um contato vazio
+      contactsArray.push(this.createEmergencyContactForm());
+    }
   }
 
   // Criar formulário para contato de emergência
@@ -371,26 +559,58 @@ export class EmployeeFormComponent implements OnInit {
       // Implementar conversão
     }
     
+    this.isSubmitting = true;
+    this.error = null;
+    
     // Enviar para o serviço
     if (this.isEditMode && this.employeeId) {
       // Atualizar funcionário existente
-      // this.employeeService.updateEmployee(this.employeeId, formData)...
+      this.employeeService.updateEmployee(this.employeeId, formData)
+        .pipe(
+          finalize(() => {
+            this.isSubmitting = false;
+          })
+        )
+        .subscribe({
+          next: (response) => {
+            this.snackBar.open('Funcionário atualizado com sucesso!', 'OK', {
+              duration: 3000,
+              panelClass: ['success-snackbar']
+            });
+            this.router.navigate(['/employees']);
+          },
+          error: (err) => {
+            this.error = err.message || 'Erro ao atualizar funcionário';
+            this.snackBar.open(this.error, 'OK', {
+              duration: 5000,
+              panelClass: ['error-snackbar']
+            });
+          }
+        });
     } else {
       // Criar novo funcionário
-      this.employeeService.createEmployee(formData).subscribe({
-        next: (response) => {
-          this.snackBar.open('Funcionário cadastrado com sucesso!', 'OK', {
-            duration: 3000
-          });
-          this.router.navigate(['/employees']);
-        },
-        error: (error) => {
-          this.snackBar.open('Erro ao cadastrar funcionário. Tente novamente.', 'OK', {
-            duration: 3000
-          });
-          console.error('Erro ao cadastrar funcionário:', error);
-        }
-      });
+      this.employeeService.createEmployee(formData)
+        .pipe(
+          finalize(() => {
+            this.isSubmitting = false;
+          })
+        )
+        .subscribe({
+          next: (response) => {
+            this.snackBar.open('Funcionário cadastrado com sucesso!', 'OK', {
+              duration: 3000,
+              panelClass: ['success-snackbar']
+            });
+            this.router.navigate(['/employees']);
+          },
+          error: (err) => {
+            this.error = err.message || 'Erro ao cadastrar funcionário';
+            this.snackBar.open(this.error, 'OK', {
+              duration: 5000,
+              panelClass: ['error-snackbar']
+            });
+          }
+        });
     }
   }
 
@@ -461,6 +681,5 @@ export class EmployeeFormComponent implements OnInit {
     // Restaurar valores padrão
     this.employeeForm.get('basicInfo.maritalStatus')?.setValue(EmployeeMaritalStatus.SOLTEIRO);
     this.employeeForm.get('professionalInfo.status')?.setValue(EmployeeContractStatus.ACTIVE);
-
   }
 }
