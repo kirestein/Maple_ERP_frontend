@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -34,11 +34,10 @@ import {
   EmployeeContractStatus,
   DriverLicenseCategory,
   EmployeeRelationship
-} from '../../../../shared/models/employee.model';
+} from '../../../../../shared/models/employee.model';
 
 // Diretivas de Máscara (ngx-mask)
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
-
 
 @Component({
   selector: 'app-employee-form',
@@ -104,143 +103,159 @@ export class EmployeeFormComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.initForm();
-    
-    // Verificar se estamos em modo de edição
-    this.route.paramMap.subscribe(params => {
-      this.employeeId = params.get('id');
-      if (this.employeeId) {
-        this.isEditMode = true;
-        this.loadEmployeeData(this.employeeId);
-      }
-    });
 
-    // Adicionar listeners para campos dependentes
-    this.setupFormListeners();
+    try {
+      this.initForm();
+      
+      // Verificar se estamos em modo de edição
+      this.route.paramMap.subscribe(params => {
+        this.employeeId = params.get('id');
+        if (this.employeeId) {
+          this.isEditMode = true;
+          this.loadEmployeeData(this.employeeId);
+          // Aqui carregaríamos os dados do funcionário para edição
+          // this.loadEmployeeData(this.employeeId);
+        }
+      });
+
+
+      // Adicionar listeners para campos dependentes
+      this.setupFormListeners();
+    } catch (error) {
+      console.error('Erro ao inicializar o componente:', error);
+      this.snackBar.open('Erro ao carregar o formulário. Recarregue a página.', 'OK', {
+        duration: 3000
+      });
+    }
   }
 
   initForm(): void {
-    this.employeeForm = this.fb.group({
-      // Informações Básicas
-      basicInfo: this.fb.group({
-        fullName: ['', [Validators.required]],
-        email: ['', [Validators.email]],
-        tagName: ['', [Validators.required]],
-        tagLastName: ['', [Validators.required]],
-        birthday: [null],
-        gender: [null],
-        maritalStatus: [EmployeeMaritalStatus.SOLTEIRO],
-        skinColor: [null],
-        graduation: [null],
-        naturalness: [''],
-        nationality: [''],
-        fatherName: [''],
-        motherName: [''],
-        employeePhoto: [null, [Validators.required]]
-      }),
+    try {
+      this.employeeForm = this.fb.group({
+        // Informações Básicas
+        basicInfo: this.fb.group({
+          fullName: ['', [Validators.required]],
+          email: [''],
+          tagName: [''],
+          tagLastName: [''],
+          birthday: [null],
+          gender: [null],
+          maritalStatus: [EmployeeMaritalStatus.SOLTEIRO],
+          skinColor: [null],
+          graduation: [null],
+          naturalness: [''],
+          nationality: [''],
+          fatherName: [''],
+          motherName: [''],
+        }),
 
-      // Documentação
-      documents: this.fb.group({
-        cpf: ['', [Validators.minLength(11)]],
-        rg: [''],
-        rgEmitter: [''],
-        rgEmissionDate: [null],
-        pisPasep: [''],
-        voterTitle: [''],
-        voterZone: [''],
-        voterSection: [''],
-        voterEmission: [null],
-        militaryCertificate: [''],
-        ctps: [''],
-        ctpsSerie: [''],
-        driversLicense: [false],
-        driversLicenseNumber: [''],
-        driversLicenseCategory: [null],
-        driversLicenseEmissionDate: [null],
-        driversLicenseExpirationDate: [null],
-      }),
+        // Documentação
+        documents: this.fb.group({
+          cpf: [''],
+          rg: [''],
+          rgEmitter: [''],
+          rgEmissionDate: [null],
+          pisPasep: [''],
+          voterTitle: [''],
+          voterZone: [''],
+          voterSection: [''],
+          voterEmission: [null],
+          militaryCertificate: [''],
+          ctps: [''],
+          ctpsSerie: [''],
+          driversLicense: [false],
+          driversLicenseNumber: [''],
+          driversLicenseCategory: [null],
+          driversLicenseEmissionDate: [null],
+          driversLicenseExpirationDate: [null],
+        }),
 
-      // Contato e Endereço
-      contactAddress: this.fb.group({
-        phone: [''],
-        mobile: [''],
-        cep: [''],
-        employeeAddress: [''],
-        employeeAddressNumber: [''],
-        employeeAddressComplement: [''],
-        employeeNeighborhood: [''],
-        employeeAddressCity: [''],
-        employeeAddressState: [''],
-      }),
+        // Contato e Endereço
+        contactAddress: this.fb.group({
+          phone: [''],
+          mobile: [''],
+          cep: [''],
+          employeeAddress: [''],
+          employeeAddressNumber: [''],
+          employeeAddressComplement: [''],
+          employeeNeighborhood: [''],
+          employeeAddressCity: [''],
+          employeeAddressState: [''],
+        }),
 
-      // Informações Familiares
-      familyInfo: this.fb.group({
-        partnerName: [''],
-        partnerCpf: [''],
-        partnerBirthday: [null],
-        partnerRg: [''],
-        dependents: this.fb.array([])
-      }),
+        // Informações Familiares
+        familyInfo: this.fb.group({
+          partnerName: [''],
+          partnerCpf: [''],
+          partnerBirthday: [null],
+          partnerRg: [''],
+          dependents: this.fb.array([])
+        }),
 
-      // Informações Profissionais
-      professionalInfo: this.fb.group({
-        jobPosition: [null],
-        jobFunctions: [''],
-        admissionDate: [null],
-        period: [''],
-        contractExpirationDate: [null],
-        dailyHours: [''],
-        weeklyHours: [''],
-        monthlyHours: [''],
-        weeklyClasses: [''],
-        hasAccumulate: [false],
-        hasAccumulateCompany: [''],
-        status: [EmployeeContractStatus.ACTIVE],
-      }),
+        // Informações Profissionais
+        professionalInfo: this.fb.group({
+          jobPosition: [null],
+          jobFunctions: [''],
+          admissionDate: [null],
+          period: [''],
+          contractExpirationDate: [null],
+          dailyHours: [''],
+          weeklyHours: [''],
+          monthlyHours: [''],
+          weeklyClasses: [''],
+          hasAccumulate: [false],
+          hasAccumulateCompany: [''],
+          status: [EmployeeContractStatus.ACTIVE],
+        }),
 
-      // Informações Financeiras
-      financialInfo: this.fb.group({
-        salary: [null],
-        salaryBank: [''],
-        salaryAgency: [''],
-        salaryAccount: [''],
-        salaryAccountType: [''],
-        familySalary: [null],
-        parenting: [''],
-        IRPF: [''],
-      }),
+        // Informações Financeiras
+        financialInfo: this.fb.group({
+          salary: [null],
+          salaryBank: [''],
+          salaryAgency: [''],
+          salaryAccount: [''],
+          salaryAccountType: [''],
+          familySalary: [null],
+          parenting: [''],
+          IRPF: [''],
+        }),
 
-      // Benefícios e Adicionais
-      benefits: this.fb.group({
-        mealValue: [null],
-        transport: [false],
-        trasportType: [''],
-        transportValue: [null],
-        healthPlan: [''],
-        healthCardNumber: [''],
-        deficiency: [false],
-        deficiencyDescription: [''],
-      }),
+        // Benefícios e Adicionais
+        benefits: this.fb.group({
+          mealValue: [null],
+          transport: [false],
+          trasportType: [''],
+          transportValue: [null],
+          healthPlan: [''],
+          healthCardNumber: [''],
+          deficiency: [false],
+          deficiencyDescription: [''],
+        }),
 
-      // Informações de Estágio/Faculdade (quando aplicável)
-      collegeInfo: this.fb.group({
-        college: [''],
-        course: [''],
-        trainingPeriod: [''],
-        ra: [''],
-        collegeCep: [''],
-        traineeAddress: [''],
-        traineeAddressNumber: [null],
-        traineeAddressNeighborhood: [''],
-        traineeAddressComplement: [''],
-        traineeAddressCity: [''],
-        traineeAddressState: [''],
-        lifInsurancePolicy: [''],
-      }),
+        // Informações de Estágio/Faculdade (quando aplicável)
+        collegeInfo: this.fb.group({
+          college: [''],
+          course: [''],
+          trainingPeriod: [''],
+          ra: [''],
+          collegeCep: [''],
+          traineeAddress: [''],
+          traineeAddressNumber: [null],
+          traineeAddressNeighborhood: [''],
+          traineeAddressComplement: [''],
+          traineeAddressCity: [''],
+          traineeAddressState: [''],
+          lifInsurancePolicy: [''],
+        }),
 
-      // Contatos de Emergência
-      emergencyContacts: this.fb.array([this.createEmergencyContactForm()]),
-    });
+        // Contatos de Emergência
+        emergencyContacts: this.fb.array([this.createEmergencyContactForm()]),
+      });
+    } catch (error) {
+      console.error('Erro ao criar formulário:', error);
+      throw error;
+    }
+
   }
 
   // Carregar dados do funcionário para edição
@@ -428,120 +443,165 @@ export class EmployeeFormComponent implements OnInit {
 
   // Criar formulário para contato de emergência
   createEmergencyContactForm(): FormGroup {
-    return this.fb.group({
-      contactName: [''],
-      contactPhone: [''],
-      contactEmail: ['', [Validators.email]],
-      contactRelationship: [null],
-    });
+    try {
+      return this.fb.group({
+        contactName: [''],
+        contactPhone: [''],
+        contactEmail: [''],
+        contactRelationship: [null],
+      });
+    } catch (error) {
+      console.error('Erro ao criar formulário de contato de emergência:', error);
+      return this.fb.group({
+        contactName: [''],
+        contactPhone: [''],
+        contactEmail: [''],
+        contactRelationship: [null],
+      });
+    }
   }
 
   // Criar formulário para dependente
   createDependentForm(): FormGroup {
-    return this.fb.group({
-      dependentName: [''],
-      dependentCpf: [''],
-      dependentBirthday: [null],
-      dependentRelationship: [null],
-    });
+    try {
+      return this.fb.group({
+        dependentName: [''],
+        dependentCpf: [''],
+        dependentBirthday: [null],
+        dependentRelationship: [null],
+      });
+    } catch (error) {
+      console.error('Erro ao criar formulário de dependente:', error);
+      return this.fb.group({
+        dependentName: [''],
+        dependentCpf: [''],
+        dependentBirthday: [null],
+        dependentRelationship: [null],
+      });
+    }
   }
 
-  // Getters para os FormArrays
+  // Getters seguros para os FormArrays
   get emergencyContacts(): FormArray {
-    return this.employeeForm.get('emergencyContacts') as FormArray;
+    try {
+      return this.employeeForm?.get('emergencyContacts') as FormArray;
+    } catch (error) {
+      console.warn('Erro ao acessar emergencyContacts:', error);
+      return this.fb.array([]);
+    }
   }
 
   get dependents(): FormArray {
-    return this.employeeForm.get('familyInfo.dependents') as FormArray;
+    try {
+      return this.employeeForm?.get('familyInfo.dependents') as FormArray;
+    } catch (error) {
+      console.warn('Erro ao acessar dependents:', error);
+      return this.fb.array([]);
+    }
   }
 
   // Adicionar contato de emergência
   addEmergencyContact(): void {
-    this.emergencyContacts.push(this.createEmergencyContactForm());
-  }
-
-  // Remover contato de emergência
-  removeEmergencyContact(index: number): void {
-    if (this.emergencyContacts.length > 1) {
-      this.emergencyContacts.removeAt(index);
-    } else {
-      this.snackBar.open('É necessário manter pelo menos um contato de emergência', 'OK', {
+    try {
+      this.emergencyContacts.push(this.createEmergencyContactForm());
+    } catch (error) {
+      console.error('Erro ao adicionar contato de emergência:', error);
+      this.snackBar.open('Erro ao adicionar contato de emergência', 'OK', {
         duration: 3000
       });
     }
   }
 
+  // Remover contato de emergência
+  removeEmergencyContact(index: number): void {
+    try {
+      if (this.emergencyContacts.length > 1) {
+        this.emergencyContacts.removeAt(index);
+      } else {
+        this.snackBar.open('É necessário manter pelo menos um contato de emergência', 'OK', {
+          duration: 3000
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao remover contato de emergência:', error);
+    }
+  }
+
   // Adicionar dependente
   addDependent(): void {
-    this.dependents.push(this.createDependentForm());
+    try {
+      this.dependents.push(this.createDependentForm());
+    } catch (error) {
+      console.error('Erro ao adicionar dependente:', error);
+      this.snackBar.open('Erro ao adicionar dependente', 'OK', {
+        duration: 3000
+      });
+    }
   }
 
   // Remover dependente
   removeDependent(index: number): void {
-    this.dependents.removeAt(index);
+    try {
+      this.dependents.removeAt(index);
+    } catch (error) {
+      console.error('Erro ao remover dependente:', error);
+    }
   }
 
   // Configurar listeners para campos dependentes
   setupFormListeners(): void {
-    // Exemplo: Habilitar/desabilitar campos de CNH baseado no checkbox
-    const driversLicenseControl = this.employeeForm.get('documents.driversLicense');
-    const driversLicenseFields = [
-      this.employeeForm.get('documents.driversLicenseNumber'),
-      this.employeeForm.get('documents.driversLicenseCategory'),
-      this.employeeForm.get('documents.driversLicenseEmissionDate'),
-      this.employeeForm.get('documents.driversLicenseExpirationDate')
-    ];
+    try {
+      // Exemplo: Habilitar/desabilitar campos de CNH baseado no checkbox
+      const driversLicenseControl = this.employeeForm?.get('documents.driversLicense');
+      if (driversLicenseControl) {
+        const driversLicenseFields = [
+          this.employeeForm.get('documents.driversLicenseNumber'),
+          this.employeeForm.get('documents.driversLicenseCategory'),
+          this.employeeForm.get('documents.driversLicenseEmissionDate'),
+          this.employeeForm.get('documents.driversLicenseExpirationDate')
+        ].filter(field => field !== null);
 
-    driversLicenseControl?.valueChanges.subscribe(hasLicense => {
-      if (hasLicense) {
-        driversLicenseFields.forEach(field => field?.enable());
-      } else {
-        driversLicenseFields.forEach(field => {
-          field?.disable();
-          field?.setValue(null);
+        driversLicenseControl.valueChanges.subscribe(hasLicense => {
+          if (hasLicense) {
+            driversLicenseFields.forEach(field => field?.enable());
+          } else {
+            driversLicenseFields.forEach(field => {
+              field?.disable();
+              field?.setValue(null);
+            });
+          }
         });
+
+        // Inicializar estado dos campos de CNH
+        if (!driversLicenseControl.value) {
+          driversLicenseFields.forEach(field => field?.disable());
+        }
       }
-    });
-
-    // Inicializar estado dos campos de CNH
-    if (!driversLicenseControl?.value) {
-      driversLicenseFields.forEach(field => field?.disable());
+    } catch (error) {
+      console.warn('Erro ao configurar listeners:', error);
     }
-
-    // Outros listeners similares para campos dependentes
-    // ...
   }
 
   // Método para upload de foto
   onPhotoSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length) {
-      const file = input.files[0];
-      
-      // Validar tipo de arquivo
-      if (!file.type.match(/^image\/(jpeg|png)$/)) {
-        this.photoError = 'Arquivo inválido. Use JPG ou PNG com até 5MB.';
-        return;
+    try {
+      const input = event.target as HTMLInputElement;
+      if (input.files && input.files.length) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = () => {
+          this.selectedPhotoUrl = reader.result;
+        };
+        
+        reader.readAsDataURL(file);
       }
-      
-      // Validar tamanho do arquivo (5MB = 5 * 1024 * 1024 bytes)
-      if (file.size > 5 * 1024 * 1024) {
-        this.photoError = 'Arquivo inválido. Use JPG ou PNG com até 5MB.';
-        return;
-      }
-      
-      // Limpar erro anterior
-      this.photoError = null;
-      
-      const reader = new FileReader();
-      
-      reader.onload = () => {
-        this.selectedPhotoUrl = reader.result;
-        // Atualizar o valor do formulário
-        this.employeeForm.get('basicInfo.employeePhoto')?.setValue(reader.result);
-      };
-      
-      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Erro ao selecionar foto:', error);
+      this.snackBar.open('Erro ao carregar a foto', 'OK', {
+        duration: 3000
+      });
+
     }
   }
 
@@ -554,156 +614,205 @@ export class EmployeeFormComponent implements OnInit {
 
   // Buscar endereço pelo CEP
   searchAddressByCep(cepField: string): void {
-    const cep = this.employeeForm.get(cepField)?.value;
-    if (cep && cep.length === 8) {
-      // Implementar chamada para API de CEP (ViaCEP, por exemplo)
-      // e preencher os campos de endereço automaticamente
+    try {
+      const cep = this.employeeForm?.get(cepField)?.value;
+      if (cep && cep.length === 8) {
+        // Implementar chamada para API de CEP (ViaCEP, por exemplo)
+        // e preencher os campos de endereço automaticamente
+      }
+    } catch (error) {
+      console.error('Erro ao buscar CEP:', error);
     }
   }
 
   // Enviar formulário
   onSubmit(): void {
-    if (this.employeeForm.invalid) {
-      this.markFormGroupTouched(this.employeeForm);
-      this.snackBar.open('Por favor, corrija os erros no formulário antes de enviar.', 'OK', {
-        duration: 3000
-      });
-      return;
-    }
-
-    // Construir objeto Employee a partir do formulário
-    const employeeData = this.prepareEmployeeData();
-    
-    // Criar FormData para envio com arquivo
-    const formData = new FormData();
-    
-    // Adicionar dados do funcionário como JSON
-    formData.append('employee', JSON.stringify(employeeData));
-    
-    // Adicionar foto se houver
-    if (this.selectedPhotoUrl && typeof this.selectedPhotoUrl !== 'string') {
-      // Converter base64 para Blob
-      // Implementar conversão
-    }
-    
-    this.isSubmitting = true;
-    this.error = null;
-    
-    // Enviar para o serviço
-    if (this.isEditMode && this.employeeId) {
-      // Atualizar funcionário existente
-      this.employeeService.updateEmployee(this.employeeId, formData)
-        .pipe(
-          finalize(() => {
-            this.isSubmitting = false;
-          })
-        )
-        .subscribe({
-          next: (response) => {
-            this.snackBar.open('Funcionário atualizado com sucesso!', 'OK', {
-              duration: 3000,
-              panelClass: ['success-snackbar']
-            });
-            this.router.navigate(['/employees']);
-          },
-          error: (err) => {
-            this.error = err.message || 'Erro ao atualizar funcionário';
-            this.snackBar.open(this.error || 'Erro ao atualizar funcionário', 'OK', {
-              duration: 5000,
-              panelClass: ['error-snackbar']
-            });
-          }
+    try {
+      if (!this.employeeForm || this.employeeForm.invalid) {
+        this.markFormGroupTouched(this.employeeForm);
+        this.snackBar.open('Por favor, corrija os erros no formulário antes de enviar.', 'OK', {
+          duration: 3000
         });
-    } else {
-      // Criar novo funcionário
-      this.employeeService.createEmployee(formData)
-        .pipe(
-          finalize(() => {
-            this.isSubmitting = false;
-          })
-        )
-        .subscribe({
+        return;
+      }
+
+
+      // Construir objeto Employee a partir do formulário
+      const employeeData = this.prepareEmployeeData();
+      
+      // Criar FormData para envio com arquivo
+      const formData = new FormData();
+      
+      // Adicionar dados do funcionário como JSON
+      formData.append('employee', JSON.stringify(employeeData));
+      
+      // Adicionar foto se houver
+      if (this.selectedPhotoUrl && typeof this.selectedPhotoUrl !== 'string') {
+        // Converter base64 para Blob
+        // Implementar conversão
+      }
+      
+      // Enviar para o serviço
+      if (this.isEditMode && this.employeeId) {
+        // Atualizar funcionário existente
+        // this.employeeService.updateEmployee(this.employeeId, formData)...
+        this.snackBar.open('Funcionalidade de edição em desenvolvimento', 'OK', {
+          duration: 3000
+        });
+      } else {
+        // Criar novo funcionário
+        this.employeeService.createEmployee(formData).subscribe({
           next: (response) => {
             this.snackBar.open('Funcionário cadastrado com sucesso!', 'OK', {
-              duration: 3000,
-              panelClass: ['success-snackbar']
+              duration: 3000
             });
             this.router.navigate(['/employees']);
           },
-          error: (err) => {
-            this.error = err.message || 'Erro ao cadastrar funcionário';
-            this.snackBar.open(this.error || 'Erro ao cadastrar funcionário', 'OK', {
-              duration: 5000,
-              panelClass: ['error-snackbar']
+          error: (error) => {
+            this.snackBar.open('Erro ao cadastrar funcionário. Verifique a conexão com o servidor.', 'OK', {
+              duration: 3000
             });
+            console.warn('Erro ao cadastrar funcionário:', error);
           }
         });
+      }
+    } catch (error) {
+      console.error('Erro no onSubmit:', error);
+      this.snackBar.open('Erro inesperado. Tente novamente.', 'OK', {
+        duration: 3000
+      });
+
     }
   }
 
   // Cancelar formulário e voltar à lista
   cancel(): void {
-    this.router.navigate(['/employees']);
+    try {
+      this.router.navigate(['/employees']);
+    } catch (error) {
+      console.error('Erro ao cancelar:', error);
+    }
   }
 
   // Preparar dados do funcionário para envio
   prepareEmployeeData(): Employee {
-    const formValue = this.employeeForm.value;
-    
-    // Combinar todos os grupos em um único objeto Employee
-    const employee: Employee = {
-      ...formValue.basicInfo,
-      ...formValue.documents,
-      ...formValue.contactAddress,
-      ...formValue.professionalInfo,
-      ...formValue.financialInfo,
-      ...formValue.benefits,
-      ...formValue.collegeInfo,
+    try {
+      const formValue = this.employeeForm?.value || {};
       
-      // Campos específicos de outros grupos
-      partnerName: formValue.familyInfo?.partnerName,
-      partnerCpf: formValue.familyInfo?.partnerCpf,
-      partnerBirthday: formValue.familyInfo?.partnerBirthday,
-      partnerRg: formValue.familyInfo?.partnerRg,
+      // Combinar todos os grupos em um único objeto Employee
+      const employee: Employee = {
+        ...formValue.basicInfo || {},
+        ...formValue.documents || {},
+        ...formValue.contactAddress || {},
+        ...formValue.professionalInfo || {},
+        ...formValue.financialInfo || {},
+        ...formValue.benefits || {},
+        ...formValue.collegeInfo || {},
+        
+        // Campos específicos de outros grupos
+        partnerName: formValue.familyInfo?.partnerName || '',
+        partnerCpf: formValue.familyInfo?.partnerCpf || '',
+        partnerBirthday: formValue.familyInfo?.partnerBirthday || null,
+        partnerRg: formValue.familyInfo?.partnerRg || '',
+        
+        // Relacionamentos
+        employeeContact: formValue.emergencyContacts || [],
+        employeeDependent: formValue.familyInfo?.dependents || [],
+      };
       
-      // Relacionamentos
-      employeeContact: formValue.emergencyContacts,
-      employeeDependent: formValue.familyInfo?.dependents,
-    };
-    
-    return employee;
+      return employee;
+    } catch (error) {
+      console.warn('Erro ao preparar dados do funcionário:', error);
+      return {} as Employee;
+    }
   }
 
   // Marcar todos os campos como touched para mostrar validações
   markFormGroupTouched(formGroup: FormGroup): void {
-    Object.values(formGroup.controls).forEach(control => {
-      control.markAsTouched();
-      
-      if (control instanceof FormGroup) {
-        this.markFormGroupTouched(control);
-      } else if (control instanceof FormArray) {
-        control.controls.forEach(arrayControl => {
-          if (arrayControl instanceof FormGroup) {
-            this.markFormGroupTouched(arrayControl);
-          }
-        });
+    try {
+      if (!formGroup || !formGroup.controls) {
+        return;
       }
-    });
+      
+      Object.values(formGroup.controls).forEach(control => {
+        if (control) {
+          control.markAsTouched();
+          
+          if (control instanceof FormGroup) {
+            this.markFormGroupTouched(control);
+          } else if (control instanceof FormArray) {
+            control.controls.forEach(arrayControl => {
+              if (arrayControl instanceof FormGroup) {
+                this.markFormGroupTouched(arrayControl);
+              }
+            });
+          }
+        }
+      });
+    } catch (error) {
+      console.warn('Erro ao marcar campos como touched:', error);
+    }
   }
 
   // Resetar formulário
   resetForm(): void {
-    this.employeeForm.reset();
-    this.selectedPhotoUrl = null;
-    
-    // Resetar arrays para estado inicial
-    while (this.emergencyContacts.length > 1) {
-      this.emergencyContacts.removeAt(1);
+    try {
+      this.employeeForm?.reset();
+      this.selectedPhotoUrl = null;
+      
+      // Resetar arrays para estado inicial
+      while (this.emergencyContacts.length > 1) {
+        this.emergencyContacts.removeAt(1);
+      }
+      
+      while (this.dependents.length > 0) {
+        this.dependents.removeAt(0);
+      }
+      
+      // Restaurar valores padrão
+      this.employeeForm?.get('basicInfo.maritalStatus')?.setValue(EmployeeMaritalStatus.SOLTEIRO);
+      this.employeeForm?.get('professionalInfo.status')?.setValue(EmployeeContractStatus.ACTIVE);
+    } catch (error) {
+      console.error('Erro ao resetar formulário:', error);
     }
-    
-    while (this.dependents.length > 0) {
-      this.dependents.removeAt(0);
+  }
+
+  // Método auxiliar para verificar se um campo tem erro
+  hasFieldError(fieldPath: string, errorType?: string): boolean {
+    try {
+      const field = this.employeeForm?.get(fieldPath);
+      if (!field) return false;
+      
+      if (errorType) {
+        return field.hasError(errorType) && (field.dirty || field.touched);
+      }
+      
+      return field.invalid && (field.dirty || field.touched);
+    } catch (error) {
+      console.warn('Erro ao verificar erro do campo:', error);
+      return false;
     }
+
+  // Método auxiliar para obter mensagem de erro
+  getFieldError(fieldPath: string): string {
+    try {
+      const field = this.employeeForm?.get(fieldPath);
+      if (!field || !field.errors) return '';
+      
+      const errors = field.errors;
+      
+      if (errors['required']) return 'Campo obrigatório';
+      if (errors['email']) return 'Email inválido';
+      if (errors['minlength']) return `Mínimo ${errors['minlength'].requiredLength} caracteres`;
+      if (errors['maxlength']) return `Máximo ${errors['maxlength'].requiredLength} caracteres`;
+      
+      return 'Campo inválido';
+    } catch (error) {
+      console.warn('Erro ao obter mensagem de erro:', error);
+      return '';
+    }
+  }
+}
     
     // Restaurar valores padrão
     this.employeeForm.get('basicInfo.maritalStatus')?.setValue(EmployeeMaritalStatus.SOLTEIRO);
