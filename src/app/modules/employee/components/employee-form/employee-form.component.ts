@@ -74,6 +74,7 @@ export class EmployeeFormComponent implements OnInit {
   isEditMode = false;
   employeeId: string | null = null;
   selectedPhotoUrl: string | ArrayBuffer | null = null;
+  photoError: string | null = null;
   isLoading = false;
   isSubmitting = false;
   error: string | null = null;
@@ -124,8 +125,8 @@ export class EmployeeFormComponent implements OnInit {
       basicInfo: this.fb.group({
         fullName: ['', [Validators.required]],
         email: ['', [Validators.email]],
-        tagName: [''],
-        tagLastName: [''],
+        tagName: ['', [Validators.required]],
+        tagLastName: ['', [Validators.required]],
         birthday: [null],
         gender: [null],
         maritalStatus: [EmployeeMaritalStatus.SOLTEIRO],
@@ -135,6 +136,7 @@ export class EmployeeFormComponent implements OnInit {
         nationality: [''],
         fatherName: [''],
         motherName: [''],
+        employeePhoto: [null, [Validators.required]]
       }),
 
       // Documentação
@@ -261,7 +263,7 @@ export class EmployeeFormComponent implements OnInit {
         },
         error: (err) => {
           this.error = err.message || 'Erro ao carregar dados do funcionário';
-          this.snackBar.open(this.error, 'Fechar', {
+          this.snackBar.open(this.error || 'Erro ao carregar dados do funcionário', 'Fechar', {
             duration: 5000,
             panelClass: ['error-snackbar']
           });
@@ -515,14 +517,39 @@ export class EmployeeFormComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length) {
       const file = input.files[0];
+      
+      // Validar tipo de arquivo
+      if (!file.type.match(/^image\/(jpeg|png)$/)) {
+        this.photoError = 'Arquivo inválido. Use JPG ou PNG com até 5MB.';
+        return;
+      }
+      
+      // Validar tamanho do arquivo (5MB = 5 * 1024 * 1024 bytes)
+      if (file.size > 5 * 1024 * 1024) {
+        this.photoError = 'Arquivo inválido. Use JPG ou PNG com até 5MB.';
+        return;
+      }
+      
+      // Limpar erro anterior
+      this.photoError = null;
+      
       const reader = new FileReader();
       
       reader.onload = () => {
         this.selectedPhotoUrl = reader.result;
+        // Atualizar o valor do formulário
+        this.employeeForm.get('basicInfo.employeePhoto')?.setValue(reader.result);
       };
       
       reader.readAsDataURL(file);
     }
+  }
+
+  // Método para remover foto
+  removePhoto(): void {
+    this.selectedPhotoUrl = null;
+    this.photoError = null;
+    this.employeeForm.get('basicInfo.employeePhoto')?.setValue(null);
   }
 
   // Buscar endereço pelo CEP
@@ -581,7 +608,7 @@ export class EmployeeFormComponent implements OnInit {
           },
           error: (err) => {
             this.error = err.message || 'Erro ao atualizar funcionário';
-            this.snackBar.open(this.error, 'OK', {
+            this.snackBar.open(this.error || 'Erro ao atualizar funcionário', 'OK', {
               duration: 5000,
               panelClass: ['error-snackbar']
             });
@@ -605,7 +632,7 @@ export class EmployeeFormComponent implements OnInit {
           },
           error: (err) => {
             this.error = err.message || 'Erro ao cadastrar funcionário';
-            this.snackBar.open(this.error, 'OK', {
+            this.snackBar.open(this.error || 'Erro ao cadastrar funcionário', 'OK', {
               duration: 5000,
               panelClass: ['error-snackbar']
             });
@@ -683,3 +710,102 @@ export class EmployeeFormComponent implements OnInit {
     this.employeeForm.get('professionalInfo.status')?.setValue(EmployeeContractStatus.ACTIVE);
   }
 }
+
+  // Validação de CPF
+  validateCpf(): void {
+    const cpfControl = this.employeeForm.get('documents.cpf');
+    if (cpfControl && cpfControl.value) {
+      const cpf = cpfControl.value.replace(/\D/g, '');
+      
+      if (!this.isValidCpf(cpf)) {
+        cpfControl.setErrors({ invalidCpf: true });
+      } else {
+        // Remove o erro se o CPF for válido
+        const errors = cpfControl.errors;
+        if (errors) {
+          delete errors['invalidCpf'];
+          cpfControl.setErrors(Object.keys(errors).length ? errors : null);
+        }
+      }
+    }
+  }
+
+  // Verificar se CPF é válido
+  private isValidCpf(cpf: string): boolean {
+    if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) {
+      return false;
+    }
+
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      sum += parseInt(cpf.charAt(i)) * (10 - i);
+    }
+    let remainder = (sum * 10) % 11;
+    if (remainder === 10 || remainder === 11) remainder = 0;
+    if (remainder !== parseInt(cpf.charAt(9))) return false;
+
+    sum = 0;
+    for (let i = 0; i < 10; i++) {
+      sum += parseInt(cpf.charAt(i)) * (11 - i);
+    }
+    remainder = (sum * 10) % 11;
+    if (remainder === 10 || remainder === 11) remainder = 0;
+    if (remainder !== parseInt(cpf.charAt(10))) return false;
+
+    return true;
+  }
+
+  // Máscara dinâmica para telefone
+  getPhoneMask(fieldName: string): string {
+    const control = this.employeeForm.get(`contactAddress.${fieldName}`);
+    if (control && control.value) {
+      const digits = control.value.replace(/\D/g, '');
+      return digits.length <= 10 ? '(00) 0000-0000' : '(00) 00000-0000';
+    }
+    return '(00) 00000-0000'; // Padrão para celular
+  }
+
+  // Validação de telefone
+  onPhoneInput(fieldName: string, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const control = this.employeeForm.get(`contactAddress.${fieldName}`);
+    
+    if (control && input.value) {
+      const digits = input.value.replace(/\D/g, '');
+      
+      // Validar quantidade de dígitos
+      if (digits.length < 10 || digits.length > 11) {
+        control.setErrors({ invalidPhone: true });
+      } else {
+        // Remove o erro se o telefone for válido
+        const errors = control.errors;
+        if (errors) {
+          delete errors['invalidPhone'];
+          control.setErrors(Object.keys(errors).length ? errors : null);
+        }
+      }
+    }
+  }
+
+  // Focar no primeiro campo inválido
+  private focusFirstInvalidField(): void {
+    const firstInvalidControl = document.querySelector('.ng-invalid');
+    if (firstInvalidControl) {
+      (firstInvalidControl as HTMLElement).focus();
+    }
+  }
+
+  // Sobrescrever o método onSubmit para incluir foco no primeiro campo inválido
+  onSubmitWithFocus(): void {
+    if (this.employeeForm.invalid) {
+      this.markFormGroupTouched(this.employeeForm);
+      this.focusFirstInvalidField();
+      this.snackBar.open('Por favor, corrija os erros no formulário antes de enviar.', 'OK', {
+        duration: 3000
+      });
+      return;
+    }
+    
+    this.onSubmit();
+  }
+

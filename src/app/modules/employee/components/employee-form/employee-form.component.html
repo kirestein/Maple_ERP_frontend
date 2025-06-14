@@ -16,31 +16,45 @@
               <div class="photo-preview" [style.backgroundImage]="selectedPhotoUrl ? 'url(' + selectedPhotoUrl + ')' : 'none'">
                 <mat-icon *ngIf="!selectedPhotoUrl">person</mat-icon>
               </div>
-              <button type="button" mat-raised-button color="primary" (click)="fileInput.click()">
-                <mat-icon>photo_camera</mat-icon> Selecionar Foto
-              </button>
-              <input hidden type="file" #fileInput (change)="onPhotoSelected($event)" accept="image/*">
+              <div class="photo-actions">
+                <button type="button" mat-raised-button color="accent" (click)="fileInput.click()">
+                  <mat-icon>photo_camera</mat-icon> {{ selectedPhotoUrl ? 'Substituir' : 'Enviar' }} Foto
+                </button>
+                <button type="button" mat-stroked-button color="warn" *ngIf="selectedPhotoUrl" (click)="removePhoto()">
+                  <mat-icon>delete</mat-icon> Remover
+                </button>
+              </div>
+              <input hidden type="file" #fileInput (change)="onPhotoSelected($event)" accept="image/jpeg,image/png">
+              <div class="photo-error" *ngIf="photoError">
+                {{ photoError }}
+              </div>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Nome Completo</mat-label>
+                <mat-label>Nome Completo *</mat-label>
                 <input matInput formControlName="fullName" placeholder="Nome completo do funcionário" required>
                 <mat-error *ngIf="employeeForm.get('basicInfo.fullName')?.hasError('required')">
-                  Nome é obrigatório
+                  Este campo é obrigatório.
                 </mat-error>
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Nome para Crachá</mat-label>
-                <input matInput formControlName="tagName" placeholder="Nome para o crachá">
+                <mat-label>Nome para Crachá *</mat-label>
+                <input matInput formControlName="tagName" placeholder="Nome para o crachá" required>
+                <mat-error *ngIf="employeeForm.get('basicInfo.tagName')?.hasError('required')">
+                  Este campo é obrigatório.
+                </mat-error>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Sobrenome para Crachá</mat-label>
-                <input matInput formControlName="tagLastName" placeholder="Sobrenome para o crachá">
+                <mat-label>Sobrenome para Crachá *</mat-label>
+                <input matInput formControlName="tagLastName" placeholder="Sobrenome para o crachá" required>
+                <mat-error *ngIf="employeeForm.get('basicInfo.tagLastName')?.hasError('required')">
+                  Este campo é obrigatório.
+                </mat-error>
               </mat-form-field>
             </div>
 
@@ -138,7 +152,12 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>CPF</mat-label>
-                <input matInput formControlName="cpf" placeholder="000.000.000-00" mask="000.000.000-00">
+                <input matInput formControlName="cpf" placeholder="000.000.000-00" 
+                       mask="000.000.000-00" 
+                       (blur)="validateCpf()">
+                <mat-error *ngIf="employeeForm.get('documents.cpf')?.hasError('invalidCpf')">
+                  CPF inválido. Verifique os dígitos.
+                </mat-error>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
@@ -265,12 +284,22 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Telefone</mat-label>
-                <input matInput formControlName="phone" placeholder="(00) 0000-0000" mask="(00) 0000-0000">
+                <input matInput formControlName="phone" placeholder="(00) 0000-0000" 
+                       [mask]="getPhoneMask('phone')" 
+                       (input)="onPhoneInput('phone', $event)">
+                <mat-error *ngIf="employeeForm.get('contactAddress.phone')?.hasError('invalidPhone')">
+                  Telefone inválido. Use o formato (00) 0000-0000 ou (00) 00000-0000.
+                </mat-error>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Celular</mat-label>
-                <input matInput formControlName="mobile" placeholder="(00) 00000-0000" mask="(00) 00000-0000">
+                <input matInput formControlName="mobile" placeholder="(00) 00000-0000" 
+                       [mask]="getPhoneMask('mobile')" 
+                       (input)="onPhoneInput('mobile', $event)">
+                <mat-error *ngIf="employeeForm.get('contactAddress.mobile')?.hasError('invalidPhone')">
+                  Celular inválido. Use o formato (00) 00000-0000.
+                </mat-error>
               </mat-form-field>
             </div>
 
