@@ -143,8 +143,8 @@ export interface Employee {
   companyName?: string;
   fullName?: string;
   email?: string;
-  tagName?: string;
-  tagLastName?: string;
+  tagName?: string; // Nome para o crachá
+  tagLastName?: string; // Sobrenome para o crachá
   birthday?: Date | string;
   age?: string;
   cep?: string;

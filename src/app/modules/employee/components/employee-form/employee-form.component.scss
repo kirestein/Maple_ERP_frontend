@@ -70,6 +70,7 @@
   margin-bottom: 16px;
   background-size: cover;
   background-position: center;
+  border: 2px solid #e0e0e0;
   
   mat-icon {
     font-size: 64px;
@@ -77,6 +78,42 @@
     height: 64px;
     color: #999;
   }
+}
+
+.photo-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.photo-error {
+  color: #d32f2f;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 8px;
+}
+
+// Estados de campos conforme especificações
+.mat-form-field {
+  &.mat-focused {
+    .mat-form-field-outline-thick {
+      border-color: #c62828 !important;
+      border-width: 2px !important;
+    }
+  }
+  
+  &.ng-invalid.ng-touched {
+    .mat-form-field-outline-thick {
+      border-color: #d32f2f !important;
+      border-width: 2px !important;
+    }
+  }
+}
+
+// Cores de acessibilidade
+.mat-accent {
+  background-color: #fdd835 !important;
+  color: #000 !important;
 }
 
 // Estilos para itens de array (contatos, dependentes)

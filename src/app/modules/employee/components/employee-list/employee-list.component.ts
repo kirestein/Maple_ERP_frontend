@@ -62,7 +62,7 @@ export class EmployeeListComponent implements OnInit {
         },
         error: (err) => {
           this.error = err.message || 'Erro ao carregar funcionários';
-          this.snackBar.open(this.error, 'Fechar', {
+          this.snackBar.open(this.error || 'Erro ao carregar funcionários', 'Fechar', {
             duration: 5000,
             panelClass: ['error-snackbar']
           });
