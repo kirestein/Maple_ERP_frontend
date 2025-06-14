@@ -37,11 +37,57 @@
   flex: 1;
 }
 
+
 .mat-mdc-form-field {
   &.full-width {
     width: 100%;
   }
-  
+}
+
+.third-width {
+  width: calc(33.33% - 11px);
+}
+
+.quarter-width {
+  width: calc(25% - 12px);
+}
+
+.two-thirds-width {
+  width: calc(66.66% - 8px);
+}
+
+.three-quarters-width {
+  width: calc(75% - 8px);
+}
+
+// Estilos para botões
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+// Estilos para upload de foto
+.photo-upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.photo-preview {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid #e0e0e0; 
   &.half-width {
     flex: 1;
   }
@@ -49,6 +95,51 @@
 
 .mat-mdc-card {
   margin-bottom: 2rem;
+}
+.photo-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.photo-error {
+  color: #d32f2f;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 8px;
+}
+
+// Estados de campos conforme especificações
+.mat-form-field {
+  &.mat-focused {
+    .mat-form-field-outline-thick {
+      border-color: #c62828 !important;
+      border-width: 2px !important;
+    }
+  }
+  
+  &.ng-invalid.ng-touched {
+    .mat-form-field-outline-thick {
+      border-color: #d32f2f !important;
+      border-width: 2px !important;
+    }
+  }
+}
+
+// Cores de acessibilidade
+.mat-accent {
+  background-color: #fdd835 !important;
+  color: #000 !important;
+}
+
+// Estilos para itens de array (contatos, dependentes)
+.array-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 16px;
+  position: relative;
+}
   
   .mat-mdc-card-header {
     margin-bottom: 1rem;
