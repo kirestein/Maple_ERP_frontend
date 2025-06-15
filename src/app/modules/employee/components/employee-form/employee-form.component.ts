@@ -24,13 +24,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 // Serviços e Modelos
 import { EmployeeService } from '../../../../core/services/employee.service';
-import { 
-  Employee, 
-  EmployeeGender, 
-  EmployeeMaritalStatus, 
-  EmployeeGraduation, 
-  EmployeeSkinColor, 
-  EmployeeCargo, 
+import {
+  Employee,
+  EmployeeGender,
+  EmployeeMaritalStatus,
+  EmployeeGraduation,
+  EmployeeSkinColor,
+  EmployeeCargo,
   EmployeeContractStatus,
   DriverLicenseCategory,
   EmployeeRelationship
@@ -66,7 +66,7 @@ import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
     provideNgxMask()
   ],
   templateUrl: './employee-form.component.html',
-  styleUrls: ['./employee-form.component.scss']
+  styleUrls: ['./employee-form.component.scss'],
 })
 export class EmployeeFormComponent implements OnInit {
   employeeForm!: FormGroup;
@@ -87,11 +87,36 @@ export class EmployeeFormComponent implements OnInit {
   statusOptions = Object.values(EmployeeContractStatus);
   driverLicenseCategoryOptions = Object.values(DriverLicenseCategory);
   relationshipOptions = Object.values(EmployeeRelationship);
-  
+
   // Estados brasileiros
   states = [
-    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
-    'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+    'AC',
+    'AL',
+    'AP',
+    'AM',
+    'BA',
+    'CE',
+    'DF',
+    'ES',
+    'GO',
+    'MA',
+    'MT',
+    'MS',
+    'MG',
+    'PA',
+    'PB',
+    'PR',
+    'PE',
+    'PI',
+    'RJ',
+    'RN',
+    'RS',
+    'RO',
+    'RR',
+    'SC',
+    'SP',
+    'SE',
+    'TO',
   ];
 
   constructor(
@@ -100,7 +125,7 @@ export class EmployeeFormComponent implements OnInit {
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit(): void {
 
