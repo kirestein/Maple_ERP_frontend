@@ -1,5 +1,3 @@
-
-
 <mat-card class="employee-form-container">
   <mat-card-header>
     <mat-card-title
@@ -40,14 +38,32 @@
                 accept="image/*"
               />
               <div class="photo-actions">
-                <button type="button" mat-raised-button color="accent" (click)="fileInput.click()">
-                  <mat-icon>photo_camera</mat-icon> {{ selectedPhotoUrl ? 'Substituir' : 'Enviar' }} Foto
+                <button
+                  type="button"
+                  mat-raised-button
+                  color="accent"
+                  (click)="fileInput.click()"
+                >
+                  <mat-icon>photo_camera</mat-icon>
+                  {{ selectedPhotoUrl ? "Substituir" : "Enviar" }} Foto
                 </button>
-                <button type="button" mat-stroked-button color="warn" *ngIf="selectedPhotoUrl" (click)="removePhoto()">
+                <button
+                  type="button"
+                  mat-stroked-button
+                  color="warn"
+                  *ngIf="selectedPhotoUrl"
+                  (click)="removePhoto()"
+                >
                   <mat-icon>delete</mat-icon> Remover
                 </button>
               </div>
-              <input hidden type="file" #fileInput (change)="onPhotoSelected($event)" accept="image/jpeg,image/png">
+              <input
+                hidden
+                type="file"
+                #fileInput
+                (change)="onPhotoSelected($event)"
+                accept="image/jpeg,image/png"
+              />
               <div class="photo-error" *ngIf="photoError">
                 {{ photoError }}
               </div>
@@ -81,8 +97,17 @@
                   placeholder="Nome para o crachá"
                 />
                 <mat-label>Nome para Crachá *</mat-label>
-                <input matInput formControlName="tagName" placeholder="Nome para o crachá" required>
-                <mat-error *ngIf="employeeForm.get('basicInfo.tagName')?.hasError('required')">
+                <input
+                  matInput
+                  formControlName="tagName"
+                  placeholder="Nome para o crachá"
+                  required
+                />
+                <mat-error
+                  *ngIf="
+                    employeeForm.get('basicInfo.tagName')?.hasError('required')
+                  "
+                >
                   Este campo é obrigatório.
                 </mat-error>
               </mat-form-field>
@@ -95,8 +120,19 @@
                   placeholder="Sobrenome para o crachá"
                 />
                 <mat-label>Sobrenome para Crachá *</mat-label>
-                <input matInput formControlName="tagLastName" placeholder="Sobrenome para o crachá" required>
-                <mat-error *ngIf="employeeForm.get('basicInfo.tagLastName')?.hasError('required')">
+                <input
+                  matInput
+                  formControlName="tagLastName"
+                  placeholder="Sobrenome para o crachá"
+                  required
+                />
+                <mat-error
+                  *ngIf="
+                    employeeForm
+                      .get('basicInfo.tagLastName')
+                      ?.hasError('required')
+                  "
+                >
                   Este campo é obrigatório.
                 </mat-error>
               </mat-form-field>
@@ -246,10 +282,18 @@
                   placeholder="000.000.000-00"
                   mask="000.000.000-00"
                 />
-                <input matInput formControlName="cpf" placeholder="000.000.000-00" 
-                       mask="000.000.000-00" 
-                       (blur)="validateCpf()">
-                <mat-error *ngIf="employeeForm.get('documents.cpf')?.hasError('invalidCpf')">
+                <input
+                  matInput
+                  formControlName="cpf"
+                  placeholder="000.000.000-00"
+                  mask="000.000.000-00"
+                  (blur)="validateCpf()"
+                />
+                <mat-error
+                  *ngIf="
+                    employeeForm.get('documents.cpf')?.hasError('invalidCpf')
+                  "
+                >
                   CPF inválido. Verifique os dígitos.
                 </mat-error>
               </mat-form-field>
@@ -472,11 +516,22 @@
                   placeholder="(00) 0000-0000"
                   mask="(00) 0000-0000"
                 />
-                <input matInput formControlName="phone" placeholder="(00) 0000-0000" 
-                       [mask]="getPhoneMask('phone')" 
-                       (input)="onPhoneInput('phone', $event)">
-                <mat-error *ngIf="employeeForm.get('contactAddress.phone')?.hasError('invalidPhone')">
-                  Telefone inválido. Use o formato (00) 0000-0000 ou (00) 00000-0000.
+                <input
+                  matInput
+                  formControlName="phone"
+                  placeholder="(00) 0000-0000"
+                  [mask]="getPhoneMask('phone')"
+                  (input)="onPhoneInput('phone', $event)"
+                />
+                <mat-error
+                  *ngIf="
+                    employeeForm
+                      .get('contactAddress.phone')
+                      ?.hasError('invalidPhone')
+                  "
+                >
+                  Telefone inválido. Use o formato (00) 0000-0000 ou (00)
+                  00000-0000.
                 </mat-error>
               </mat-form-field>
 
@@ -488,10 +543,20 @@
                   placeholder="(00) 00000-0000"
                   mask="(00) 00000-0000"
                 />
-                <input matInput formControlName="mobile" placeholder="(00) 00000-0000" 
-                       [mask]="getPhoneMask('mobile')" 
-                       (input)="onPhoneInput('mobile', $event)">
-                <mat-error *ngIf="employeeForm.get('contactAddress.mobile')?.hasError('invalidPhone')">
+                <input
+                  matInput
+                  formControlName="mobile"
+                  placeholder="(00) 00000-0000"
+                  [mask]="getPhoneMask('mobile')"
+                  (input)="onPhoneInput('mobile', $event)"
+                />
+                <mat-error
+                  *ngIf="
+                    employeeForm
+                      .get('contactAddress.mobile')
+                      ?.hasError('invalidPhone')
+                  "
+                >
                   Celular inválido. Use o formato (00) 00000-0000.
                 </mat-error>
               </mat-form-field>
@@ -1373,15 +1438,15 @@
   </mat-card-content>
 </mat-card>
 
-
-    
-    <mat-card-actions align="end">
-      <button mat-button type="button" (click)="cancel()">
-        Cancelar
-      </button>
-      <button mat-raised-button color="primary" type="submit" (click)="onSubmit()" [disabled]="!employeeForm || employeeForm.invalid">
-        {{ isEditMode ? 'Atualizar' : 'Salvar' }}
-      </button>
-    </mat-card-actions>
-  </mat-card>
-</div>
+<mat-card-actions align="end">
+  <button mat-button type="button" (click)="cancel()">Cancelar</button>
+  <button
+    mat-raised-button
+    color="primary"
+    type="submit"
+    (click)="onSubmit()"
+    [disabled]="!employeeForm || employeeForm.invalid"
+  >
+    {{ isEditMode ? "Atualizar" : "Salvar" }}
+  </button>
+</mat-card-actions>
