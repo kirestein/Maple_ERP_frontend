@@ -28,11 +28,11 @@
 }
 
 .third-width {
-  width: calc(33.33% - 11px);
+  width: calc(33.33% - 8px);
 }
 
 .quarter-width {
-  width: calc(25% - 12px);
+  width: calc(25% - 8px);
 }
 
 .two-thirds-width {
@@ -180,6 +180,6 @@ mat-card-actions {
   
   .form-row {
     flex-direction: column;
-    gap: 0;
+    gap: 16px;
   }
 }
