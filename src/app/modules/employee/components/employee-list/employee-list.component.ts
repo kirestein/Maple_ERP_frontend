@@ -23,10 +23,10 @@ import { finalize } from 'rxjs';
     MatIconModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
-    MatDialogModule
+    MatDialogModule,
   ],
   templateUrl: './employee-list.component.html',
-  styleUrl: './employee-list.component.scss'
+  styleUrl: './employee-list.component.scss',
 })
 export class EmployeeListComponent implements OnInit {
   employees: Employee[] = [];
@@ -49,8 +49,9 @@ export class EmployeeListComponent implements OnInit {
   loadEmployees(): void {
     this.isLoading = true;
     this.error = null;
-    
-    this.employeeService.getEmployees()
+
+    this.employeeService
+      .getEmployees()
       .pipe(
         finalize(() => {
           this.isLoading = false;
@@ -62,11 +63,15 @@ export class EmployeeListComponent implements OnInit {
         },
         error: (err) => {
           this.error = err.message || 'Erro ao carregar funcionários';
-          this.snackBar.open(this.error || 'Erro ao carregar funcionários', 'Fechar', {
-            duration: 5000,
-            panelClass: ['error-snackbar']
-          });
-        }
+          this.snackBar.open(
+            this.error || 'Erro ao carregar funcionários',
+            'Fechar',
+            {
+              duration: 5000,
+              panelClass: ['error-snackbar'],
+            }
+          );
+        },
       });
   }
 
@@ -75,26 +80,25 @@ export class EmployeeListComponent implements OnInit {
    */
   deleteEmployee(id: string | number): void {
     if (confirm('Tem certeza que deseja excluir este funcionário?')) {
-      this.employeeService.deleteEmployee(id)
-        .subscribe({
-          next: () => {
-            this.snackBar.open('Funcionário excluído com sucesso', 'Fechar', {
-              duration: 3000,
-              panelClass: ['success-snackbar']
-            });
-            this.loadEmployees(); // Recarrega a lista após exclusão
-          },
-          error: (err) => {
-            this.snackBar.open(
-              err.message || 'Erro ao excluir funcionário', 
-              'Fechar', 
-              {
-                duration: 5000,
-                panelClass: ['error-snackbar']
-              }
-            );
-          }
-        });
+      this.employeeService.deleteEmployee(id).subscribe({
+        next: () => {
+          this.snackBar.open('Funcionário excluído com sucesso', 'Fechar', {
+            duration: 3000,
+            panelClass: ['success-snackbar'],
+          });
+          this.loadEmployees(); // Recarrega a lista após exclusão
+        },
+        error: (err) => {
+          this.snackBar.open(
+            err.message || 'Erro ao excluir funcionário',
+            'Fechar',
+            {
+              duration: 5000,
+              panelClass: ['error-snackbar'],
+            }
+          );
+        },
+      });
     }
   }
 }

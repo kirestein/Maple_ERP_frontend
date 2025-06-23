@@ -1,7 +1,8 @@
-
 <mat-card class="employee-form-container">
   <mat-card-header>
-    <mat-card-title>{{ isEditMode ? 'Editar' : 'Cadastrar' }} Funcionário</mat-card-title>
+    <mat-card-title
+      >{{ isEditMode ? "Editar" : "Cadastrar" }} Funcionário</mat-card-title
+    >
     <mat-card-subtitle>Preencha os dados do funcionário</mat-card-subtitle>
   </mat-card-header>
 
@@ -13,18 +14,56 @@
           <ng-template matStepLabel>Informações Básicas</ng-template>
           <div class="step-content" formGroupName="basicInfo">
             <div class="photo-upload-container">
-              <div class="photo-preview" [style.backgroundImage]="selectedPhotoUrl ? 'url(' + selectedPhotoUrl + ')' : 'none'">
+              <div
+                class="photo-preview"
+                [style.backgroundImage]="
+                  selectedPhotoUrl ? 'url(' + selectedPhotoUrl + ')' : 'none'
+                "
+              >
                 <mat-icon *ngIf="!selectedPhotoUrl">person</mat-icon>
               </div>
+              <button
+                type="button"
+                mat-raised-button
+                color="primary"
+                (click)="fileInput.click()"
+              >
+                <mat-icon>photo_camera</mat-icon> Selecionar Foto
+              </button>
+              <input
+                hidden
+                type="file"
+                #fileInput
+                (change)="onPhotoSelected($event)"
+                accept="image/*"
+              />
               <div class="photo-actions">
-                <button type="button" mat-raised-button color="accent" (click)="fileInput.click()">
-                  <mat-icon>photo_camera</mat-icon> {{ selectedPhotoUrl ? 'Substituir' : 'Enviar' }} Foto
+                <button
+                  type="button"
+                  mat-raised-button
+                  color="accent"
+                  (click)="fileInput.click()"
+                >
+                  <mat-icon>photo_camera</mat-icon>
+                  {{ selectedPhotoUrl ? "Substituir" : "Enviar" }} Foto
                 </button>
-                <button type="button" mat-stroked-button color="warn" *ngIf="selectedPhotoUrl" (click)="removePhoto()">
+                <button
+                  type="button"
+                  mat-stroked-button
+                  color="warn"
+                  *ngIf="selectedPhotoUrl"
+                  (click)="removePhoto()"
+                >
                   <mat-icon>delete</mat-icon> Remover
                 </button>
               </div>
-              <input hidden type="file" #fileInput (change)="onPhotoSelected($event)" accept="image/jpeg,image/png">
+              <input
+                hidden
+                type="file"
+                #fileInput
+                (change)="onPhotoSelected($event)"
+                accept="image/jpeg,image/png"
+              />
               <div class="photo-error" *ngIf="photoError">
                 {{ photoError }}
               </div>
@@ -33,8 +72,17 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Nome Completo *</mat-label>
-                <input matInput formControlName="fullName" placeholder="Nome completo do funcionário" required>
-                <mat-error *ngIf="employeeForm.get('basicInfo.fullName')?.hasError('required')">
+                <input
+                  matInput
+                  formControlName="fullName"
+                  placeholder="Nome completo do funcionário"
+                  required
+                />
+                <mat-error
+                  *ngIf="
+                    employeeForm.get('basicInfo.fullName')?.hasError('required')
+                  "
+                >
                   Este campo é obrigatório.
                 </mat-error>
               </mat-form-field>
@@ -42,17 +90,49 @@
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Nome para Crachá</mat-label>
+                <input
+                  matInput
+                  formControlName="tagName"
+                  placeholder="Nome para o crachá"
+                />
                 <mat-label>Nome para Crachá *</mat-label>
-                <input matInput formControlName="tagName" placeholder="Nome para o crachá" required>
-                <mat-error *ngIf="employeeForm.get('basicInfo.tagName')?.hasError('required')">
+                <input
+                  matInput
+                  formControlName="tagName"
+                  placeholder="Nome para o crachá"
+                  required
+                />
+                <mat-error
+                  *ngIf="
+                    employeeForm.get('basicInfo.tagName')?.hasError('required')
+                  "
+                >
                   Este campo é obrigatório.
                 </mat-error>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Sobrenome para Crachá</mat-label>
+                <input
+                  matInput
+                  formControlName="tagLastName"
+                  placeholder="Sobrenome para o crachá"
+                />
                 <mat-label>Sobrenome para Crachá *</mat-label>
-                <input matInput formControlName="tagLastName" placeholder="Sobrenome para o crachá" required>
-                <mat-error *ngIf="employeeForm.get('basicInfo.tagLastName')?.hasError('required')">
+                <input
+                  matInput
+                  formControlName="tagLastName"
+                  placeholder="Sobrenome para o crachá"
+                  required
+                />
+                <mat-error
+                  *ngIf="
+                    employeeForm
+                      .get('basicInfo.tagLastName')
+                      ?.hasError('required')
+                  "
+                >
                   Este campo é obrigatório.
                 </mat-error>
               </mat-form-field>
@@ -61,16 +141,30 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>E-mail</mat-label>
-                <input matInput formControlName="email" placeholder="email@exemplo.com" type="email">
-                <mat-error *ngIf="employeeForm.get('basicInfo.email')?.hasError('email')">
+                <input
+                  matInput
+                  formControlName="email"
+                  placeholder="email@exemplo.com"
+                  type="email"
+                />
+                <mat-error
+                  *ngIf="employeeForm.get('basicInfo.email')?.hasError('email')"
+                >
                   E-mail inválido
                 </mat-error>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Data de Nascimento</mat-label>
-                <input matInput [matDatepicker]="birthdayPicker" formControlName="birthday">
-                <mat-datepicker-toggle matSuffix [for]="birthdayPicker"></mat-datepicker-toggle>
+                <input
+                  matInput
+                  [matDatepicker]="birthdayPicker"
+                  formControlName="birthday"
+                />
+                <mat-datepicker-toggle
+                  matSuffix
+                  [for]="birthdayPicker"
+                ></mat-datepicker-toggle>
                 <mat-datepicker #birthdayPicker></mat-datepicker>
               </mat-form-field>
             </div>
@@ -79,7 +173,10 @@
               <mat-form-field appearance="outline" class="third-width">
                 <mat-label>Gênero</mat-label>
                 <mat-select formControlName="gender">
-                  <mat-option *ngFor="let gender of genderOptions" [value]="gender">
+                  <mat-option
+                    *ngFor="let gender of genderOptions"
+                    [value]="gender"
+                  >
                     {{ gender }}
                   </mat-option>
                 </mat-select>
@@ -88,7 +185,10 @@
               <mat-form-field appearance="outline" class="third-width">
                 <mat-label>Estado Civil</mat-label>
                 <mat-select formControlName="maritalStatus">
-                  <mat-option *ngFor="let status of maritalStatusOptions" [value]="status">
+                  <mat-option
+                    *ngFor="let status of maritalStatusOptions"
+                    [value]="status"
+                  >
                     {{ status }}
                   </mat-option>
                 </mat-select>
@@ -97,7 +197,10 @@
               <mat-form-field appearance="outline" class="third-width">
                 <mat-label>Cor/Raça</mat-label>
                 <mat-select formControlName="skinColor">
-                  <mat-option *ngFor="let color of skinColorOptions" [value]="color">
+                  <mat-option
+                    *ngFor="let color of skinColorOptions"
+                    [value]="color"
+                  >
                     {{ color }}
                   </mat-option>
                 </mat-select>
@@ -107,12 +210,20 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Naturalidade</mat-label>
-                <input matInput formControlName="naturalness" placeholder="Cidade de nascimento">
+                <input
+                  matInput
+                  formControlName="naturalness"
+                  placeholder="Cidade de nascimento"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Nacionalidade</mat-label>
-                <input matInput formControlName="nationality" placeholder="País de origem">
+                <input
+                  matInput
+                  formControlName="nationality"
+                  placeholder="País de origem"
+                />
               </mat-form-field>
             </div>
 
@@ -120,7 +231,10 @@
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Escolaridade</mat-label>
                 <mat-select formControlName="graduation">
-                  <mat-option *ngFor="let graduation of graduationOptions" [value]="graduation">
+                  <mat-option
+                    *ngFor="let graduation of graduationOptions"
+                    [value]="graduation"
+                  >
                     {{ graduation }}
                   </mat-option>
                 </mat-select>
@@ -130,17 +244,27 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Nome do Pai</mat-label>
-                <input matInput formControlName="fatherName" placeholder="Nome completo do pai">
+                <input
+                  matInput
+                  formControlName="fatherName"
+                  placeholder="Nome completo do pai"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Nome da Mãe</mat-label>
-                <input matInput formControlName="motherName" placeholder="Nome completo da mãe">
+                <input
+                  matInput
+                  formControlName="motherName"
+                  placeholder="Nome completo da mãe"
+                />
               </mat-form-field>
             </div>
 
             <div class="button-row">
-              <button mat-button matStepperNext type="button" color="primary">Próximo</button>
+              <button mat-button matStepperNext type="button" color="primary">
+                Próximo
+              </button>
             </div>
           </div>
         </mat-step>
@@ -152,30 +276,59 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>CPF</mat-label>
-                <input matInput formControlName="cpf" placeholder="000.000.000-00" 
-                       mask="000.000.000-00" 
-                       (blur)="validateCpf()">
-                <mat-error *ngIf="employeeForm.get('documents.cpf')?.hasError('invalidCpf')">
+                <input
+                  matInput
+                  formControlName="cpf"
+                  placeholder="000.000.000-00"
+                  mask="000.000.000-00"
+                />
+                <input
+                  matInput
+                  formControlName="cpf"
+                  placeholder="000.000.000-00"
+                  mask="000.000.000-00"
+                  (blur)="validateCpf()"
+                />
+                <mat-error
+                  *ngIf="
+                    employeeForm.get('documents.cpf')?.hasError('invalidCpf')
+                  "
+                >
                   CPF inválido. Verifique os dígitos.
                 </mat-error>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>RG</mat-label>
-                <input matInput formControlName="rg" placeholder="00.000.000-0">
+                <input
+                  matInput
+                  formControlName="rg"
+                  placeholder="00.000.000-0"
+                />
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Órgão Emissor</mat-label>
-                <input matInput formControlName="rgEmitter" placeholder="SSP/UF">
+                <input
+                  matInput
+                  formControlName="rgEmitter"
+                  placeholder="SSP/UF"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Data de Emissão</mat-label>
-                <input matInput [matDatepicker]="rgEmissionPicker" formControlName="rgEmissionDate">
-                <mat-datepicker-toggle matSuffix [for]="rgEmissionPicker"></mat-datepicker-toggle>
+                <input
+                  matInput
+                  [matDatepicker]="rgEmissionPicker"
+                  formControlName="rgEmissionDate"
+                />
+                <mat-datepicker-toggle
+                  matSuffix
+                  [for]="rgEmissionPicker"
+                ></mat-datepicker-toggle>
                 <mat-datepicker #rgEmissionPicker></mat-datepicker>
               </mat-form-field>
             </div>
@@ -183,30 +336,57 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>PIS/PASEP</mat-label>
-                <input matInput formControlName="pisPasep" placeholder="000.00000.00-0" mask="000.00000.00-0">
+                <input
+                  matInput
+                  formControlName="pisPasep"
+                  placeholder="000.00000.00-0"
+                  mask="000.00000.00-0"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Título de Eleitor</mat-label>
-                <input matInput formControlName="voterTitle" placeholder="0000 0000 0000" mask="0000 0000 0000">
+                <input
+                  matInput
+                  formControlName="voterTitle"
+                  placeholder="0000 0000 0000"
+                  mask="0000 0000 0000"
+                />
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="third-width">
                 <mat-label>Zona Eleitoral</mat-label>
-                <input matInput formControlName="voterZone" placeholder="000" mask="000">
+                <input
+                  matInput
+                  formControlName="voterZone"
+                  placeholder="000"
+                  mask="000"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="third-width">
                 <mat-label>Seção Eleitoral</mat-label>
-                <input matInput formControlName="voterSection" placeholder="0000" mask="0000">
+                <input
+                  matInput
+                  formControlName="voterSection"
+                  placeholder="0000"
+                  mask="0000"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="third-width">
                 <mat-label>Data de Emissão</mat-label>
-                <input matInput [matDatepicker]="voterEmissionPicker" formControlName="voterEmission">
-                <mat-datepicker-toggle matSuffix [for]="voterEmissionPicker"></mat-datepicker-toggle>
+                <input
+                  matInput
+                  [matDatepicker]="voterEmissionPicker"
+                  formControlName="voterEmission"
+                />
+                <mat-datepicker-toggle
+                  matSuffix
+                  [for]="voterEmissionPicker"
+                ></mat-datepicker-toggle>
                 <mat-datepicker #voterEmissionPicker></mat-datepicker>
               </mat-form-field>
             </div>
@@ -214,19 +394,33 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Certificado Militar</mat-label>
-                <input matInput formControlName="militaryCertificate" placeholder="Número do certificado">
+                <input
+                  matInput
+                  formControlName="militaryCertificate"
+                  placeholder="Número do certificado"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>CTPS</mat-label>
-                <input matInput formControlName="ctps" placeholder="0000000" mask="0000000">
+                <input
+                  matInput
+                  formControlName="ctps"
+                  placeholder="0000000"
+                  mask="0000000"
+                />
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Série CTPS</mat-label>
-                <input matInput formControlName="ctpsSerie" placeholder="000-0" mask="000-0">
+                <input
+                  matInput
+                  formControlName="ctpsSerie"
+                  placeholder="000-0"
+                  mask="000-0"
+                />
               </mat-form-field>
             </div>
 
@@ -238,41 +432,73 @@
               </mat-checkbox>
             </div>
 
-            <div class="form-row" *ngIf="employeeForm.get('documents.driversLicense')?.value">
+            <div
+              class="form-row"
+              *ngIf="employeeForm.get('documents.driversLicense')?.value"
+            >
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Número da CNH</mat-label>
-                <input matInput formControlName="driversLicenseNumber" placeholder="00000000000" mask="00000000000">
+                <input
+                  matInput
+                  formControlName="driversLicenseNumber"
+                  placeholder="00000000000"
+                  mask="00000000000"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Categoria</mat-label>
                 <mat-select formControlName="driversLicenseCategory">
-                  <mat-option *ngFor="let category of driverLicenseCategoryOptions" [value]="category">
+                  <mat-option
+                    *ngFor="let category of driverLicenseCategoryOptions"
+                    [value]="category"
+                  >
                     {{ category }}
                   </mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
 
-            <div class="form-row" *ngIf="employeeForm.get('documents.driversLicense')?.value">
+            <div
+              class="form-row"
+              *ngIf="employeeForm.get('documents.driversLicense')?.value"
+            >
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Data de Emissão</mat-label>
-                <input matInput [matDatepicker]="driverEmissionPicker" formControlName="driversLicenseEmissionDate">
-                <mat-datepicker-toggle matSuffix [for]="driverEmissionPicker"></mat-datepicker-toggle>
+                <input
+                  matInput
+                  [matDatepicker]="driverEmissionPicker"
+                  formControlName="driversLicenseEmissionDate"
+                />
+                <mat-datepicker-toggle
+                  matSuffix
+                  [for]="driverEmissionPicker"
+                ></mat-datepicker-toggle>
                 <mat-datepicker #driverEmissionPicker></mat-datepicker>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Data de Validade</mat-label>
-                <input matInput [matDatepicker]="driverExpirationPicker" formControlName="driversLicenseExpirationDate">
-                <mat-datepicker-toggle matSuffix [for]="driverExpirationPicker"></mat-datepicker-toggle>
+                <input
+                  matInput
+                  [matDatepicker]="driverExpirationPicker"
+                  formControlName="driversLicenseExpirationDate"
+                />
+                <mat-datepicker-toggle
+                  matSuffix
+                  [for]="driverExpirationPicker"
+                ></mat-datepicker-toggle>
                 <mat-datepicker #driverExpirationPicker></mat-datepicker>
               </mat-form-field>
             </div>
 
             <div class="button-row">
-              <button mat-button matStepperPrevious type="button">Voltar</button>
-              <button mat-button matStepperNext type="button" color="primary">Próximo</button>
+              <button mat-button matStepperPrevious type="button">
+                Voltar
+              </button>
+              <button mat-button matStepperNext type="button" color="primary">
+                Próximo
+              </button>
             </div>
           </div>
         </mat-step>
@@ -284,20 +510,53 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Telefone</mat-label>
-                <input matInput formControlName="phone" placeholder="(00) 0000-0000" 
-                       [mask]="getPhoneMask('phone')" 
-                       (input)="onPhoneInput('phone', $event)">
-                <mat-error *ngIf="employeeForm.get('contactAddress.phone')?.hasError('invalidPhone')">
-                  Telefone inválido. Use o formato (00) 0000-0000 ou (00) 00000-0000.
+                <input
+                  matInput
+                  formControlName="phone"
+                  placeholder="(00) 0000-0000"
+                  mask="(00) 0000-0000"
+                />
+                <input
+                  matInput
+                  formControlName="phone"
+                  placeholder="(00) 0000-0000"
+                  [mask]="getPhoneMask('phone')"
+                  (input)="onPhoneInput('phone', $event)"
+                />
+                <mat-error
+                  *ngIf="
+                    employeeForm
+                      .get('contactAddress.phone')
+                      ?.hasError('invalidPhone')
+                  "
+                >
+                  Telefone inválido. Use o formato (00) 0000-0000 ou (00)
+                  00000-0000.
                 </mat-error>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Celular</mat-label>
-                <input matInput formControlName="mobile" placeholder="(00) 00000-0000" 
-                       [mask]="getPhoneMask('mobile')" 
-                       (input)="onPhoneInput('mobile', $event)">
-                <mat-error *ngIf="employeeForm.get('contactAddress.mobile')?.hasError('invalidPhone')">
+                <input
+                  matInput
+                  formControlName="mobile"
+                  placeholder="(00) 00000-0000"
+                  mask="(00) 00000-0000"
+                />
+                <input
+                  matInput
+                  formControlName="mobile"
+                  placeholder="(00) 00000-0000"
+                  [mask]="getPhoneMask('mobile')"
+                  (input)="onPhoneInput('mobile', $event)"
+                />
+                <mat-error
+                  *ngIf="
+                    employeeForm
+                      .get('contactAddress.mobile')
+                      ?.hasError('invalidPhone')
+                  "
+                >
                   Celular inválido. Use o formato (00) 00000-0000.
                 </mat-error>
               </mat-form-field>
@@ -306,41 +565,71 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>CEP</mat-label>
-                <input matInput formControlName="cep" placeholder="00000-000" mask="00000-000" 
-                       (blur)="searchAddressByCep('contactAddress.cep')">
-                <mat-icon matSuffix class="clickable" matTooltip="Buscar endereço pelo CEP"
-                         (click)="searchAddressByCep('contactAddress.cep')">search</mat-icon>
+                <input
+                  matInput
+                  formControlName="cep"
+                  placeholder="00000-000"
+                  mask="00000-000"
+                  (blur)="searchAddressByCep('contactAddress.cep')"
+                />
+                <mat-icon
+                  matSuffix
+                  class="clickable"
+                  matTooltip="Buscar endereço pelo CEP"
+                  (click)="searchAddressByCep('contactAddress.cep')"
+                  >search</mat-icon
+                >
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="three-quarters-width">
                 <mat-label>Endereço</mat-label>
-                <input matInput formControlName="employeeAddress" placeholder="Rua, Avenida, etc.">
+                <input
+                  matInput
+                  formControlName="employeeAddress"
+                  placeholder="Rua, Avenida, etc."
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="quarter-width">
                 <mat-label>Número</mat-label>
-                <input matInput formControlName="employeeAddressNumber" placeholder="Nº">
+                <input
+                  matInput
+                  formControlName="employeeAddressNumber"
+                  placeholder="Nº"
+                />
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Complemento</mat-label>
-                <input matInput formControlName="employeeAddressComplement" placeholder="Apto, Bloco, etc.">
+                <input
+                  matInput
+                  formControlName="employeeAddressComplement"
+                  placeholder="Apto, Bloco, etc."
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Bairro</mat-label>
-                <input matInput formControlName="employeeNeighborhood" placeholder="Bairro">
+                <input
+                  matInput
+                  formControlName="employeeNeighborhood"
+                  placeholder="Bairro"
+                />
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="two-thirds-width">
                 <mat-label>Cidade</mat-label>
-                <input matInput formControlName="employeeAddressCity" placeholder="Cidade">
+                <input
+                  matInput
+                  formControlName="employeeAddressCity"
+                  placeholder="Cidade"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="third-width">
@@ -354,8 +643,12 @@
             </div>
 
             <div class="button-row">
-              <button mat-button matStepperPrevious type="button">Voltar</button>
-              <button mat-button matStepperNext type="button" color="primary">Próximo</button>
+              <button mat-button matStepperPrevious type="button">
+                Voltar
+              </button>
+              <button mat-button matStepperNext type="button" color="primary">
+                Próximo
+              </button>
             </div>
           </div>
         </mat-step>
@@ -368,20 +661,36 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Nome do Cônjuge</mat-label>
-                <input matInput formControlName="partnerName" placeholder="Nome completo do cônjuge">
+                <input
+                  matInput
+                  formControlName="partnerName"
+                  placeholder="Nome completo do cônjuge"
+                />
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>CPF do Cônjuge</mat-label>
-                <input matInput formControlName="partnerCpf" placeholder="000.000.000-00" mask="000.000.000-00">
+                <input
+                  matInput
+                  formControlName="partnerCpf"
+                  placeholder="000.000.000-00"
+                  mask="000.000.000-00"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Data de Nascimento</mat-label>
-                <input matInput [matDatepicker]="partnerBirthdayPicker" formControlName="partnerBirthday">
-                <mat-datepicker-toggle matSuffix [for]="partnerBirthdayPicker"></mat-datepicker-toggle>
+                <input
+                  matInput
+                  [matDatepicker]="partnerBirthdayPicker"
+                  formControlName="partnerBirthday"
+                />
+                <mat-datepicker-toggle
+                  matSuffix
+                  [for]="partnerBirthdayPicker"
+                ></mat-datepicker-toggle>
                 <mat-datepicker #partnerBirthdayPicker></mat-datepicker>
               </mat-form-field>
             </div>
@@ -389,7 +698,11 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>RG do Cônjuge</mat-label>
-                <input matInput formControlName="partnerRg" placeholder="00.000.000-0">
+                <input
+                  matInput
+                  formControlName="partnerRg"
+                  placeholder="00.000.000-0"
+                />
               </mat-form-field>
             </div>
 
@@ -397,15 +710,32 @@
 
             <h3>
               Dependentes
-              <button type="button" mat-mini-fab color="primary" (click)="addDependent()" class="add-button">
+              <button
+                type="button"
+                mat-mini-fab
+                color="primary"
+                (click)="addDependent()"
+                class="add-button"
+              >
                 <mat-icon>add</mat-icon>
               </button>
             </h3>
 
             <div formArrayName="dependents">
-              <div *ngFor="let dependent of dependents.controls; let i = index" [formGroupName]="i" class="array-item">
-                <h4>Dependente {{ i + 1 }}
-                  <button type="button" mat-icon-button color="warn" (click)="removeDependent(i)" class="remove-button">
+              <div
+                *ngFor="let dependent of dependents.controls; let i = index"
+                [formGroupName]="i"
+                class="array-item"
+              >
+                <h4>
+                  Dependente {{ i + 1 }}
+                  <button
+                    type="button"
+                    mat-icon-button
+                    color="warn"
+                    (click)="removeDependent(i)"
+                    class="remove-button"
+                  >
                     <mat-icon>delete</mat-icon>
                   </button>
                 </h4>
@@ -413,20 +743,36 @@
                 <div class="form-row">
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>Nome do Dependente</mat-label>
-                    <input matInput formControlName="dependentName" placeholder="Nome completo do dependente">
+                    <input
+                      matInput
+                      formControlName="dependentName"
+                      placeholder="Nome completo do dependente"
+                    />
                   </mat-form-field>
                 </div>
 
                 <div class="form-row">
                   <mat-form-field appearance="outline" class="half-width">
                     <mat-label>CPF do Dependente</mat-label>
-                    <input matInput formControlName="dependentCpf" placeholder="000.000.000-00" mask="000.000.000-00">
+                    <input
+                      matInput
+                      formControlName="dependentCpf"
+                      placeholder="000.000.000-00"
+                      mask="000.000.000-00"
+                    />
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="half-width">
                     <mat-label>Data de Nascimento</mat-label>
-                    <input matInput [matDatepicker]="dependentBirthdayPicker" formControlName="dependentBirthday">
-                    <mat-datepicker-toggle matSuffix [for]="dependentBirthdayPicker"></mat-datepicker-toggle>
+                    <input
+                      matInput
+                      [matDatepicker]="dependentBirthdayPicker"
+                      formControlName="dependentBirthday"
+                    />
+                    <mat-datepicker-toggle
+                      matSuffix
+                      [for]="dependentBirthdayPicker"
+                    ></mat-datepicker-toggle>
                     <mat-datepicker #dependentBirthdayPicker></mat-datepicker>
                   </mat-form-field>
                 </div>
@@ -435,7 +781,10 @@
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>Parentesco</mat-label>
                     <mat-select formControlName="dependentRelationship">
-                      <mat-option *ngFor="let relationship of relationshipOptions" [value]="relationship">
+                      <mat-option
+                        *ngFor="let relationship of relationshipOptions"
+                        [value]="relationship"
+                      >
                         {{ relationship }}
                       </mat-option>
                     </mat-select>
@@ -445,8 +794,12 @@
             </div>
 
             <div class="button-row">
-              <button mat-button matStepperPrevious type="button">Voltar</button>
-              <button mat-button matStepperNext type="button" color="primary">Próximo</button>
+              <button mat-button matStepperPrevious type="button">
+                Voltar
+              </button>
+              <button mat-button matStepperNext type="button" color="primary">
+                Próximo
+              </button>
             </div>
           </div>
         </mat-step>
@@ -459,7 +812,10 @@
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Cargo</mat-label>
                 <mat-select formControlName="jobPosition">
-                  <mat-option *ngFor="let cargo of cargoOptions" [value]="cargo">
+                  <mat-option
+                    *ngFor="let cargo of cargoOptions"
+                    [value]="cargo"
+                  >
                     {{ cargo }}
                   </mat-option>
                 </mat-select>
@@ -469,36 +825,61 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Funções</mat-label>
-                <textarea matInput formControlName="jobFunctions" placeholder="Descrição das funções"></textarea>
+                <textarea
+                  matInput
+                  formControlName="jobFunctions"
+                  placeholder="Descrição das funções"
+                ></textarea>
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Data de Admissão</mat-label>
-                <input matInput [matDatepicker]="admissionDatePicker" formControlName="admissionDate">
-                <mat-datepicker-toggle matSuffix [for]="admissionDatePicker"></mat-datepicker-toggle>
+                <input
+                  matInput
+                  [matDatepicker]="admissionDatePicker"
+                  formControlName="admissionDate"
+                />
+                <mat-datepicker-toggle
+                  matSuffix
+                  [for]="admissionDatePicker"
+                ></mat-datepicker-toggle>
                 <mat-datepicker #admissionDatePicker></mat-datepicker>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Período</mat-label>
-                <input matInput formControlName="period" placeholder="Manhã, Tarde, Noite, Integral">
+                <input
+                  matInput
+                  formControlName="period"
+                  placeholder="Manhã, Tarde, Noite, Integral"
+                />
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Data de Expiração do Contrato</mat-label>
-                <input matInput [matDatepicker]="contractExpirationPicker" formControlName="contractExpirationDate">
-                <mat-datepicker-toggle matSuffix [for]="contractExpirationPicker"></mat-datepicker-toggle>
+                <input
+                  matInput
+                  [matDatepicker]="contractExpirationPicker"
+                  formControlName="contractExpirationDate"
+                />
+                <mat-datepicker-toggle
+                  matSuffix
+                  [for]="contractExpirationPicker"
+                ></mat-datepicker-toggle>
                 <mat-datepicker #contractExpirationPicker></mat-datepicker>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Status do Contrato</mat-label>
                 <mat-select formControlName="status">
-                  <mat-option *ngFor="let status of statusOptions" [value]="status">
+                  <mat-option
+                    *ngFor="let status of statusOptions"
+                    [value]="status"
+                  >
                     {{ status }}
                   </mat-option>
                 </mat-select>
@@ -508,24 +889,40 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="third-width">
                 <mat-label>Horas Diárias</mat-label>
-                <input matInput formControlName="dailyHours" placeholder="Ex: 8h">
+                <input
+                  matInput
+                  formControlName="dailyHours"
+                  placeholder="Ex: 8h"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="third-width">
                 <mat-label>Horas Semanais</mat-label>
-                <input matInput formControlName="weeklyHours" placeholder="Ex: 40h">
+                <input
+                  matInput
+                  formControlName="weeklyHours"
+                  placeholder="Ex: 40h"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="third-width">
                 <mat-label>Horas Mensais</mat-label>
-                <input matInput formControlName="monthlyHours" placeholder="Ex: 160h">
+                <input
+                  matInput
+                  formControlName="monthlyHours"
+                  placeholder="Ex: 160h"
+                />
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Aulas Semanais</mat-label>
-                <input matInput formControlName="weeklyClasses" placeholder="Número de aulas semanais">
+                <input
+                  matInput
+                  formControlName="weeklyClasses"
+                  placeholder="Número de aulas semanais"
+                />
               </mat-form-field>
             </div>
 
@@ -535,16 +932,27 @@
               </mat-checkbox>
             </div>
 
-            <div class="form-row" *ngIf="employeeForm.get('professionalInfo.hasAccumulate')?.value">
+            <div
+              class="form-row"
+              *ngIf="employeeForm.get('professionalInfo.hasAccumulate')?.value"
+            >
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Empresa do acúmulo</mat-label>
-                <input matInput formControlName="hasAccumulateCompany" placeholder="Nome da empresa">
+                <input
+                  matInput
+                  formControlName="hasAccumulateCompany"
+                  placeholder="Nome da empresa"
+                />
               </mat-form-field>
             </div>
 
             <div class="button-row">
-              <button mat-button matStepperPrevious type="button">Voltar</button>
-              <button mat-button matStepperNext type="button" color="primary">Próximo</button>
+              <button mat-button matStepperPrevious type="button">
+                Voltar
+              </button>
+              <button mat-button matStepperNext type="button" color="primary">
+                Próximo
+              </button>
             </div>
           </div>
         </mat-step>
@@ -556,13 +964,25 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Salário</mat-label>
-                <input matInput formControlName="salary" placeholder="0,00" type="number" step="0.01">
+                <input
+                  matInput
+                  formControlName="salary"
+                  placeholder="0,00"
+                  type="number"
+                  step="0.01"
+                />
                 <span matPrefix>R$ &nbsp;</span>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Salário Família</mat-label>
-                <input matInput formControlName="familySalary" placeholder="0,00" type="number" step="0.01">
+                <input
+                  matInput
+                  formControlName="familySalary"
+                  placeholder="0,00"
+                  type="number"
+                  step="0.01"
+                />
                 <span matPrefix>R$ &nbsp;</span>
               </mat-form-field>
             </div>
@@ -570,19 +990,31 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Banco</mat-label>
-                <input matInput formControlName="salaryBank" placeholder="Nome do banco">
+                <input
+                  matInput
+                  formControlName="salaryBank"
+                  placeholder="Nome do banco"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Agência</mat-label>
-                <input matInput formControlName="salaryAgency" placeholder="Número da agência">
+                <input
+                  matInput
+                  formControlName="salaryAgency"
+                  placeholder="Número da agência"
+                />
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Conta</mat-label>
-                <input matInput formControlName="salaryAccount" placeholder="Número da conta">
+                <input
+                  matInput
+                  formControlName="salaryAccount"
+                  placeholder="Número da conta"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
@@ -598,18 +1030,30 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Parentesco</mat-label>
-                <input matInput formControlName="parenting" placeholder="Parentesco">
+                <input
+                  matInput
+                  formControlName="parenting"
+                  placeholder="Parentesco"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>IRPF</mat-label>
-                <input matInput formControlName="IRPF" placeholder="Informações de IRPF">
+                <input
+                  matInput
+                  formControlName="IRPF"
+                  placeholder="Informações de IRPF"
+                />
               </mat-form-field>
             </div>
 
             <div class="button-row">
-              <button mat-button matStepperPrevious type="button">Voltar</button>
-              <button mat-button matStepperNext type="button" color="primary">Próximo</button>
+              <button mat-button matStepperPrevious type="button">
+                Voltar
+              </button>
+              <button mat-button matStepperNext type="button" color="primary">
+                Próximo
+              </button>
             </div>
           </div>
         </mat-step>
@@ -621,7 +1065,13 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Valor Refeição</mat-label>
-                <input matInput formControlName="mealValue" placeholder="0,00" type="number" step="0.01">
+                <input
+                  matInput
+                  formControlName="mealValue"
+                  placeholder="0,00"
+                  type="number"
+                  step="0.01"
+                />
                 <span matPrefix>R$ &nbsp;</span>
               </mat-form-field>
             </div>
@@ -632,15 +1082,28 @@
               </mat-checkbox>
             </div>
 
-            <div class="form-row" *ngIf="employeeForm.get('benefits.transport')?.value">
+            <div
+              class="form-row"
+              *ngIf="employeeForm.get('benefits.transport')?.value"
+            >
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Tipo de Transporte</mat-label>
-                <input matInput formControlName="trasportType" placeholder="Ex: Ônibus, Metrô">
+                <input
+                  matInput
+                  formControlName="transportType"
+                  placeholder="Ex: Ônibus, Metrô"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Valor do Transporte</mat-label>
-                <input matInput formControlName="transportValue" placeholder="0,00" type="number" step="0.01">
+                <input
+                  matInput
+                  formControlName="transportValue"
+                  placeholder="0,00"
+                  type="number"
+                  step="0.01"
+                />
                 <span matPrefix>R$ &nbsp;</span>
               </mat-form-field>
             </div>
@@ -648,12 +1111,20 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Plano de Saúde</mat-label>
-                <input matInput formControlName="healthPlan" placeholder="Nome do plano">
+                <input
+                  matInput
+                  formControlName="healthPlan"
+                  placeholder="Nome do plano"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Número da Carteirinha</mat-label>
-                <input matInput formControlName="healthCardNumber" placeholder="Número da carteirinha">
+                <input
+                  matInput
+                  formControlName="healthCardNumber"
+                  placeholder="Número da carteirinha"
+                />
               </mat-form-field>
             </div>
 
@@ -663,16 +1134,27 @@
               </mat-checkbox>
             </div>
 
-            <div class="form-row" *ngIf="employeeForm.get('benefits.deficiency')?.value">
+            <div
+              class="form-row"
+              *ngIf="employeeForm.get('benefits.deficiency')?.value"
+            >
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Descrição da Deficiência</mat-label>
-                <textarea matInput formControlName="deficiencyDescription" placeholder="Descreva a deficiência"></textarea>
+                <textarea
+                  matInput
+                  formControlName="deficiencyDescription"
+                  placeholder="Descreva a deficiência"
+                ></textarea>
               </mat-form-field>
             </div>
 
             <div class="button-row">
-              <button mat-button matStepperPrevious type="button">Voltar</button>
-              <button mat-button matStepperNext type="button" color="primary">Próximo</button>
+              <button mat-button matStepperPrevious type="button">
+                Voltar
+              </button>
+              <button mat-button matStepperNext type="button" color="primary">
+                Próximo
+              </button>
             </div>
           </div>
         </mat-step>
@@ -684,72 +1166,123 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Faculdade/Instituição</mat-label>
-                <input matInput formControlName="college" placeholder="Nome da instituição">
+                <input
+                  matInput
+                  formControlName="college"
+                  placeholder="Nome da instituição"
+                />
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Curso</mat-label>
-                <input matInput formControlName="course" placeholder="Nome do curso">
+                <input
+                  matInput
+                  formControlName="course"
+                  placeholder="Nome do curso"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Período de Formação</mat-label>
-                <input matInput formControlName="trainingPeriod" placeholder="Ex: 2020-2024">
+                <input
+                  matInput
+                  formControlName="trainingPeriod"
+                  placeholder="Ex: 2020-2024"
+                />
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>RA</mat-label>
-                <input matInput formControlName="ra" placeholder="Registro Acadêmico">
+                <input
+                  matInput
+                  formControlName="ra"
+                  placeholder="Registro Acadêmico"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Apólice de Seguro de Vida</mat-label>
-                <input matInput formControlName="lifInsurancePolicy" placeholder="Número da apólice">
+                <input
+                  matInput
+                  formControlName="lifInsurancePolicy"
+                  placeholder="Número da apólice"
+                />
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>CEP da Instituição</mat-label>
-                <input matInput formControlName="collegeCep" placeholder="00000-000" mask="00000-000"
-                       (blur)="searchAddressByCep('collegeInfo.collegeCep')">
-                <mat-icon matSuffix class="clickable" matTooltip="Buscar endereço pelo CEP"
-                         (click)="searchAddressByCep('collegeInfo.collegeCep')">search</mat-icon>
+                <input
+                  matInput
+                  formControlName="collegeCep"
+                  placeholder="00000-000"
+                  mask="00000-000"
+                  (blur)="searchAddressByCep('collegeInfo.collegeCep')"
+                />
+                <mat-icon
+                  matSuffix
+                  class="clickable"
+                  matTooltip="Buscar endereço pelo CEP"
+                  (click)="searchAddressByCep('collegeInfo.collegeCep')"
+                  >search</mat-icon
+                >
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="three-quarters-width">
                 <mat-label>Endereço da Instituição</mat-label>
-                <input matInput formControlName="traineeAddress" placeholder="Rua, Avenida, etc.">
+                <input
+                  matInput
+                  formControlName="traineeAddress"
+                  placeholder="Rua, Avenida, etc."
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="quarter-width">
                 <mat-label>Número</mat-label>
-                <input matInput formControlName="traineeAddressNumber" type="number" placeholder="Nº">
+                <input
+                  matInput
+                  formControlName="traineeAddressNumber"
+                  type="number"
+                  placeholder="Nº"
+                />
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Complemento</mat-label>
-                <input matInput formControlName="traineeAddressComplement" placeholder="Apto, Bloco, etc.">
+                <input
+                  matInput
+                  formControlName="traineeAddressComplement"
+                  placeholder="Apto, Bloco, etc."
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Bairro</mat-label>
-                <input matInput formControlName="traineeAddressNeighborhood" placeholder="Bairro">
+                <input
+                  matInput
+                  formControlName="traineeAddressNeighborhood"
+                  placeholder="Bairro"
+                />
               </mat-form-field>
             </div>
 
             <div class="form-row">
               <mat-form-field appearance="outline" class="two-thirds-width">
                 <mat-label>Cidade</mat-label>
-                <input matInput formControlName="traineeAddressCity" placeholder="Cidade">
+                <input
+                  matInput
+                  formControlName="traineeAddressCity"
+                  placeholder="Cidade"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="third-width">
@@ -763,8 +1296,12 @@
             </div>
 
             <div class="button-row">
-              <button mat-button matStepperPrevious type="button">Voltar</button>
-              <button mat-button matStepperNext type="button" color="primary">Próximo</button>
+              <button mat-button matStepperPrevious type="button">
+                Voltar
+              </button>
+              <button mat-button matStepperNext type="button" color="primary">
+                Próximo
+              </button>
             </div>
           </div>
         </mat-step>
@@ -775,15 +1312,35 @@
           <div class="step-content">
             <h3>
               Contatos de Emergência
-              <button type="button" mat-mini-fab color="primary" (click)="addEmergencyContact()" class="add-button">
+              <button
+                type="button"
+                mat-mini-fab
+                color="primary"
+                (click)="addEmergencyContact()"
+                class="add-button"
+              >
                 <mat-icon>add</mat-icon>
               </button>
             </h3>
 
             <div formArrayName="emergencyContacts">
-              <div *ngFor="let contact of emergencyContacts.controls; let i = index" [formGroupName]="i" class="array-item">
-                <h4>Contato {{ i + 1 }}
-                  <button type="button" mat-icon-button color="warn" (click)="removeEmergencyContact(i)" class="remove-button">
+              <div
+                *ngFor="
+                  let contact of emergencyContacts.controls;
+                  let i = index
+                "
+                [formGroupName]="i"
+                class="array-item"
+              >
+                <h4>
+                  Contato {{ i + 1 }}
+                  <button
+                    type="button"
+                    mat-icon-button
+                    color="warn"
+                    (click)="removeEmergencyContact(i)"
+                    class="remove-button"
+                  >
                     <mat-icon>delete</mat-icon>
                   </button>
                 </h4>
@@ -791,20 +1348,36 @@
                 <div class="form-row">
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>Nome do Contato</mat-label>
-                    <input matInput formControlName="contactName" placeholder="Nome completo do contato">
+                    <input
+                      matInput
+                      formControlName="contactName"
+                      placeholder="Nome completo do contato"
+                    />
                   </mat-form-field>
                 </div>
 
                 <div class="form-row">
                   <mat-form-field appearance="outline" class="half-width">
                     <mat-label>Telefone</mat-label>
-                    <input matInput formControlName="contactPhone" placeholder="(00) 00000-0000" mask="(00) 00000-0000">
+                    <input
+                      matInput
+                      formControlName="contactPhone"
+                      placeholder="(00) 00000-0000"
+                      mask="(00) 00000-0000"
+                    />
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="half-width">
                     <mat-label>E-mail</mat-label>
-                    <input matInput formControlName="contactEmail" placeholder="email@exemplo.com" type="email">
-                    <mat-error *ngIf="contact.get('contactEmail')?.hasError('email')">
+                    <input
+                      matInput
+                      formControlName="contactEmail"
+                      placeholder="email@exemplo.com"
+                      type="email"
+                    />
+                    <mat-error
+                      *ngIf="contact.get('contactEmail')?.hasError('email')"
+                    >
                       E-mail inválido
                     </mat-error>
                   </mat-form-field>
@@ -814,7 +1387,10 @@
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>Parentesco</mat-label>
                     <mat-select formControlName="contactRelationship">
-                      <mat-option *ngFor="let relationship of relationshipOptions" [value]="relationship">
+                      <mat-option
+                        *ngFor="let relationship of relationshipOptions"
+                        [value]="relationship"
+                      >
                         {{ relationship }}
                       </mat-option>
                     </mat-select>
@@ -824,8 +1400,12 @@
             </div>
 
             <div class="button-row">
-              <button mat-button matStepperPrevious type="button">Voltar</button>
-              <button mat-button matStepperNext type="button" color="primary">Revisar</button>
+              <button mat-button matStepperPrevious type="button">
+                Voltar
+              </button>
+              <button mat-button matStepperNext type="button" color="primary">
+                Revisar
+              </button>
             </div>
           </div>
         </mat-step>
@@ -835,75 +1415,38 @@
           <ng-template matStepLabel>Revisar e Enviar</ng-template>
           <div class="step-content">
             <h3>Revise as informações antes de enviar</h3>
-            <p>Verifique se todos os dados estão corretos. Você pode voltar para editar qualquer seção se necessário.</p>
+            <p>
+              Verifique se todos os dados estão corretos. Você pode voltar para
+              editar qualquer seção se necessário.
+            </p>
 
             <div class="button-row">
-              <button mat-button matStepperPrevious type="button">Voltar</button>
-              <button mat-button (click)="resetForm()" type="button">Limpar</button>
-              <button mat-raised-button color="primary" type="submit">Salvar Funcionário</button>
+              <button mat-button matStepperPrevious type="button">
+                Voltar
+              </button>
+              <button mat-button (click)="resetForm()" type="button">
+                Limpar
+              </button>
+              <button mat-raised-button color="primary" type="submit">
+                Salvar Funcionário
+              </button>
             </div>
           </div>
         </mat-step>
       </mat-stepper>
     </form>
   </mat-card-content>
-=======
-<mat-card>
-  <mat-card-header>
-    <mat-card-title>{{ isEditMode ? 'Editar Funcionário' : 'Novo Funcionário' }}</mat-card-title>
-    <mat-card-subtitle>Preencha os dados do funcionário</mat-card-subtitle>
-  </mat-card-header>
-  
-  <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
-    <mat-card-content>
-      <div class="form-container">
-        <mat-form-field appearance="outline">
-          <mat-label>Nome Completo</mat-label>
-          <input matInput formControlName="fullName" placeholder="Nome completo do funcionário">
-          <mat-error *ngIf="employeeForm.get('fullName')?.hasError('required')">
-            Nome é obrigatório
-          </mat-error>
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline">
-          <mat-label>E-mail</mat-label>
-          <input matInput formControlName="email" placeholder="email@maplebear.com.br">
-          <mat-error *ngIf="employeeForm.get('email')?.hasError('required')">
-            E-mail é obrigatório
-          </mat-error>
-          <mat-error *ngIf="employeeForm.get('email')?.hasError('email')">
-            Formato de e-mail inválido
-          </mat-error>
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline">
-          <mat-label>Cargo</mat-label>
-          <mat-select formControlName="jobPosition">
-            <mat-option value="Professor">Professor</mat-option>
-            <mat-option value="Coordenador">Coordenador</mat-option>
-            <mat-option value="Diretor">Diretor</mat-option>
-            <mat-option value="Administrativo">Administrativo</mat-option>
-          </mat-select>
-          <mat-error *ngIf="employeeForm.get('jobPosition')?.hasError('required')">
-            Cargo é obrigatório
-          </mat-error>
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline">
-          <mat-label>Data de Admissão</mat-label>
-          <input matInput formControlName="admissionDate" [matDatepicker]="picker" placeholder="DD/MM/AAAA">
-          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
-        </mat-form-field>
-      </div>
-    </mat-card-content>
-    
-    <mat-card-actions>
-      <button mat-button type="button" (click)="cancel()">Cancelar</button>
-      <button mat-raised-button color="primary" type="submit" [disabled]="employeeForm.invalid">
-        {{ isEditMode ? 'Atualizar' : 'Cadastrar' }}
-      </button>
-    </mat-card-actions>
-  </form>
-
 </mat-card>
+
+<mat-card-actions align="end">
+  <button mat-button type="button" (click)="cancel()">Cancelar</button>
+  <button
+    mat-raised-button
+    color="primary"
+    type="submit"
+    (click)="onSubmit()"
+    [disabled]="!employeeForm || employeeForm.invalid"
+  >
+    {{ isEditMode ? "Atualizar" : "Salvar" }}
+  </button>
+</mat-card-actions>

@@ -8,7 +8,7 @@ export enum DriverLicenseCategory {
   AB = 'AB',
   AC = 'AC',
   AD = 'AD',
-  AE = 'AE'
+  AE = 'AE',
 }
 
 export enum EmployeeCargo {
@@ -46,19 +46,19 @@ export enum EmployeeCargo {
   INSPETORA_DE_ALUNOS_6_HORAS = 'INSPETORA_DE_ALUNOS_6_HORAS',
   PROFESSOR_EDUC_INFANTIL = 'PROFESSOR_EDUC_INFANTIL',
   SUPERVISORA_OPERACIONAL = 'SUPERVISORA_OPERACIONAL',
-  OUTRO = 'OUTRO'
+  OUTRO = 'OUTRO',
 }
 
 export enum EmployeeContractStatus {
   ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE'
+  INACTIVE = 'INACTIVE',
 }
 
 export enum EmployeeGender {
   MASCULINO = 'MASCULINO',
   FEMININO = 'FEMININO',
   OTHER = 'OTHER',
-  NO_ONE = 'NO_ONE'
+  NO_ONE = 'NO_ONE',
 }
 
 export enum EmployeeGraduation {
@@ -74,7 +74,7 @@ export enum EmployeeGraduation {
   DOUTORADO_COMPLETO = 'DOUTORADO_COMPLETO',
   POS_DOUTORADO_CURSANDO = 'POS_DOUTORADO_CURSANDO',
   POS_DOUTORADO_COMPLETO = 'POS_DOUTORADO_COMPLETO',
-  OUTRO = 'OUTRO'
+  OUTRO = 'OUTRO',
 }
 
 export enum EmployeeMaritalStatus {
@@ -82,7 +82,7 @@ export enum EmployeeMaritalStatus {
   CASADO = 'CASADO',
   DIVORCIADO = 'DIVORCIADO',
   VIUVO = 'VIUVO',
-  OUTRO = 'OUTRO'
+  OUTRO = 'OUTRO',
 }
 
 export enum EmployeeRelationship {
@@ -94,7 +94,7 @@ export enum EmployeeRelationship {
   ESPOSA = 'ESPOSA',
   IRMAO = 'IRMAO',
   IRMA = 'IRMA',
-  OUTRO = 'OUTRO'
+  OUTRO = 'OUTRO',
 }
 
 export enum EmployeeSkinColor {
@@ -104,7 +104,7 @@ export enum EmployeeSkinColor {
   AMARELO = 'AMARELO',
   PARDO = 'PARDO',
   INDIGENAS = 'INDIGENAS',
-  OUTRO = 'OUTRO'
+  OUTRO = 'OUTRO',
 }
 
 // Interfaces para os modelos de dados
@@ -230,7 +230,7 @@ export interface Employee {
   userId?: string;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  
+
   // Relacionamentos
   employeeContact?: EmployeeContact[];
   employeeDependent?: EmployeeDependent[];
