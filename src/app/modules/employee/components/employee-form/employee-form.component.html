@@ -17,9 +17,7 @@
               <div
                 class="photo-preview"
                 [style.backgroundImage]="
-                  selectedPhotoUrl ? 'url(' + selectedPhotoUrl + ')' : 'none'
-                "
-              >
+                  selectedPhotoUrl ? 'url(' + selectedPhotoUrl + ')' : 'none'">
                 <mat-icon *ngIf="!selectedPhotoUrl">person</mat-icon>
               </div>
               <button
@@ -79,9 +77,7 @@
                   required
                 />
                 <mat-error
-                  *ngIf="
-                    employeeForm.get('basicInfo.fullName')?.hasError('required')
-                  "
+                  *ngIf="employeeForm.get('basicInfo.fullName')?.hasError('required')"
                 >
                   Este campo é obrigatório.
                 </mat-error>
@@ -104,9 +100,7 @@
                   required
                 />
                 <mat-error
-                  *ngIf="
-                    employeeForm.get('basicInfo.tagName')?.hasError('required')
-                  "
+                  *ngIf="employeeForm.get('basicInfo.tagName')?.hasError('required')"
                 >
                   Este campo é obrigatório.
                 </mat-error>
@@ -127,11 +121,9 @@
                   required
                 />
                 <mat-error
-                  *ngIf="
-                    employeeForm
+                  *ngIf="employeeForm
                       .get('basicInfo.tagLastName')
-                      ?.hasError('required')
-                  "
+                      ?.hasError('required')"
                 >
                   Este campo é obrigatório.
                 </mat-error>
@@ -290,9 +282,7 @@
                   (blur)="validateCpf()"
                 />
                 <mat-error
-                  *ngIf="
-                    employeeForm.get('documents.cpf')?.hasError('invalidCpf')
-                  "
+                  *ngIf="employeeForm.get('documents.cpf')?.hasError('invalidCpf')"
                 >
                   CPF inválido. Verifique os dígitos.
                 </mat-error>
@@ -524,11 +514,9 @@
                   (input)="onPhoneInput('phone', $event)"
                 />
                 <mat-error
-                  *ngIf="
-                    employeeForm
+                  *ngIf="employeeForm
                       .get('contactAddress.phone')
-                      ?.hasError('invalidPhone')
-                  "
+                      ?.hasError('invalidPhone')"
                 >
                   Telefone inválido. Use o formato (00) 0000-0000 ou (00)
                   00000-0000.
@@ -551,11 +539,9 @@
                   (input)="onPhoneInput('mobile', $event)"
                 />
                 <mat-error
-                  *ngIf="
-                    employeeForm
+                  *ngIf="employeeForm
                       .get('contactAddress.mobile')
-                      ?.hasError('invalidPhone')
-                  "
+                      ?.hasError('invalidPhone')"
                 >
                   Celular inválido. Use o formato (00) 00000-0000.
                 </mat-error>
