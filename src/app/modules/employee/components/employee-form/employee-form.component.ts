@@ -243,7 +243,7 @@ export class EmployeeFormComponent implements OnInit {
         traineeAddressComplement: [''],
         traineeAddressCity: [''],
         traineeAddressState: [''],
-        lifeInsurancePolicy: [''],
+        lifInsurancePolicy: [''],
       }),
       emergencyContacts: this.fb.array([this.createEmergencyContactForm()]),
     });
