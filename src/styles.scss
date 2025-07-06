@@ -1,4 +1,58 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+@import '@angular/material/prebuilt-themes/deeppurple-amber.css';
+
+html, body { 
+  height: 100%; 
+  margin: 0; 
+  font-family: Roboto, "Helvetica Neue", sans-serif; 
+}
+
+/* Garantir que Angular Material seja carregado */
+.mat-typography {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+/* Melhorar aparência dos formulários */
+.mat-form-field {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* Estilos para melhor apresentação */
+.employee-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.mat-stepper-horizontal {
+  margin-top: 20px;
+}
+
+.mat-step-header {
+  pointer-events: auto !important;
+}
+
+/* Corrigir estilos de erro que podem não aparecer */
+.mat-error {
+  color: #f44336 !important;
+  font-size: 12px;
+}
+
+/* Garantir que os ícones Material apareçam */
+.material-icons {
+  font-family: 'Material Icons' !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
