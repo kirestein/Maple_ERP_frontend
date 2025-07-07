@@ -77,6 +77,7 @@ export class EmployeeFormComponent implements OnInit {
   isEditMode = false;
   employeeId: string | null = null;
   selectedPhotoUrl: string | ArrayBuffer | null = null;
+  selectedPhotoFile: File | null = null;
   photoError: string | null = null;
   isLoading = false;
   isSubmitting = false;
@@ -259,9 +260,10 @@ export class EmployeeFormComponent implements OnInit {
       .subscribe({
         next: (employee) => {
           this.populateForm(employee);
-          if (employee.employeePhoto) {
-            this.selectedPhotoUrl = employee.employeePhoto;
-          }
+          // TODO: Implementar carregamento de foto
+          // if (employee.photoUrl) {
+          //   this.selectedPhotoUrl = employee.photoUrl;
+          // }
         },
         error: (err) => {
           this.error = err.message || 'Erro ao carregar dados do funcionário';
@@ -518,6 +520,21 @@ export class EmployeeFormComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length) {
       const file = input.files[0];
+      
+      // Validar tipo e tamanho do arquivo
+      if (!file.type.startsWith('image/')) {
+        this.photoError = 'Apenas arquivos de imagem são permitidos.';
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        this.photoError = 'A imagem deve ter no máximo 5MB.';
+        return;
+      }
+      
+      this.photoError = null;
+      this.selectedPhotoFile = file;
+      
       const reader = new FileReader();
       reader.onload = () => {
         this.selectedPhotoUrl = reader.result;
@@ -525,11 +542,17 @@ export class EmployeeFormComponent implements OnInit {
       reader.readAsDataURL(file);
     }
   }
+  
   removePhoto(): void {
     this.selectedPhotoUrl = null;
+    this.selectedPhotoFile = null;
     this.photoError = null;
-    // Se houver campo de foto no form, limpe aqui
-    // this.employeeForm.get('basicInfo.employeePhoto')?.setValue(null);
+    
+    // Limpar input de arquivo
+    const photoInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (photoInput) {
+      photoInput.value = '';
+    }
   }
 
   // Buscar endereço pelo CEP (placeholder)
@@ -551,33 +574,52 @@ export class EmployeeFormComponent implements OnInit {
       );
       return;
     }
+
+    this.isSubmitting = true;
     const employeeData = this.prepareEmployeeData();
+    
     const formData = new FormData();
     formData.append('employee', JSON.stringify(employeeData));
+    
     // Adicionar foto se necessário
-    // if (this.selectedPhotoUrl && typeof this.selectedPhotoUrl !== 'string') { ... }
-    if (this.isEditMode && this.employeeId) {
-      // this.employeeService.updateEmployee(this.employeeId, formData)...
-      this.snackBar.open('Funcionalidade de edição em desenvolvimento', 'OK', {
-        duration: 3000,
-      });
-    } else {
-      this.employeeService.createEmployee(formData).subscribe({
-        next: () => {
-          this.snackBar.open('Funcionário cadastrado com sucesso!', 'OK', {
+    if (this.selectedPhotoFile) {
+      formData.append('photo', this.selectedPhotoFile);
+    }
+
+    const operation$ = this.isEditMode && this.employeeId
+      ? this.employeeService.updateEmployee(this.employeeId, formData)
+      : this.employeeService.createEmployee(formData);
+
+    operation$
+      .pipe(finalize(() => (this.isSubmitting = false)))
+      .subscribe({
+        next: (employee) => {
+          const message = this.isEditMode
+            ? 'Funcionário atualizado com sucesso!'
+            : 'Funcionário cadastrado com sucesso!';
+          
+          this.snackBar.open(message, 'OK', {
             duration: 3000,
+            panelClass: ['success-snackbar']
           });
+          
           this.router.navigate(['/employees']);
         },
-        error: () => {
+        error: (error) => {
+          const message = this.isEditMode
+            ? 'Erro ao atualizar funcionário'
+            : 'Erro ao cadastrar funcionário';
+          
           this.snackBar.open(
-            'Erro ao cadastrar funcionário. Verifique a conexão com o servidor.',
+            `${message}: ${error.message}`,
             'OK',
-            { duration: 3000 }
+            { 
+              duration: 5000,
+              panelClass: ['error-snackbar']
+            }
           );
         },
       });
-    }
   }
 
   // Cancelar formulário e voltar à lista
