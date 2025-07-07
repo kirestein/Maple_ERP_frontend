@@ -45,6 +45,9 @@ import {
 // Diretivas de Máscara (ngx-mask)
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
+// Componente de Crachá
+import { CrachaComponent } from '../../../../../shared/components/cracha/cracha.component';
+
 @Component({
   selector: 'app-employee-form',
   standalone: true,
@@ -67,6 +70,7 @@ import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
     MatTooltipModule,
     MatProgressSpinnerModule,
     NgxMaskDirective,
+    CrachaComponent,
   ],
   providers: [provideNgxMask()],
   templateUrl: './employee-form.component.html',
@@ -748,5 +752,103 @@ export class EmployeeFormComponent implements OnInit {
       return;
     }
     this.onSubmit();
+  }
+  
+  // Método para gerar preview do funcionário para o crachá
+  getEmployeePreview(): Employee {
+    const formValue = this.employeeForm.value;
+    
+    return {
+      id: this.employeeId || '',
+      fullName: formValue.basicInfo?.fullName || '',
+      tagName: formValue.basicInfo?.tagName || '',
+      tagLastName: formValue.basicInfo?.tagLastName || '',
+      email: formValue.basicInfo?.email || '',
+      jobFunctions: formValue.professionalInfo?.jobFunctions || '',
+      jobPosition: formValue.professionalInfo?.jobPosition || '',
+      department: formValue.professionalInfo?.department || '',
+      photo: this.selectedPhotoUrl as string || '',
+      employeePhoto: this.selectedPhotoUrl as string || '',
+      // Outros campos necessários com valores padrão
+      birthday: formValue.basicInfo?.birthday || null,
+      gender: formValue.basicInfo?.gender || null,
+      maritalStatus: formValue.basicInfo?.maritalStatus || null,
+      skinColor: formValue.basicInfo?.skinColor || null,
+      graduation: formValue.basicInfo?.graduation || null,
+      naturalness: formValue.basicInfo?.naturalness || '',
+      nationality: formValue.basicInfo?.nationality || '',
+      fatherName: formValue.basicInfo?.fatherName || '',
+      motherName: formValue.basicInfo?.motherName || '',
+      cpf: formValue.documents?.cpf || '',
+      rg: formValue.documents?.rg || '',
+      rgEmitter: formValue.documents?.rgEmitter || '',
+      rgEmissionDate: formValue.documents?.rgEmissionDate || null,
+      pisPasep: formValue.documents?.pisPasep || '',
+      voterTitle: formValue.documents?.voterTitle || '',
+      voterZone: formValue.documents?.voterZone || '',
+      voterSection: formValue.documents?.voterSection || '',
+      voterEmission: formValue.documents?.voterEmission || null,
+      militaryCertificate: formValue.documents?.militaryCertificate || '',
+      ctps: formValue.documents?.ctps || '',
+      ctpsSerie: formValue.documents?.ctpsSerie || '',
+      driversLicense: formValue.documents?.driversLicense || false,
+      driversLicenseNumber: formValue.documents?.driversLicenseNumber || '',
+      driversLicenseCategory: formValue.documents?.driversLicenseCategory || null,
+      driversLicenseEmissionDate: formValue.documents?.driversLicenseEmissionDate || null,
+      driversLicenseExpirationDate: formValue.documents?.driversLicenseExpirationDate || null,
+      phone: formValue.contactAddress?.phone || '',
+      mobile: formValue.contactAddress?.mobile || '',
+      cep: formValue.contactAddress?.cep || '',
+      employeeAddress: formValue.contactAddress?.employeeAddress || '',
+      employeeAddressNumber: formValue.contactAddress?.employeeAddressNumber || '',
+      employeeAddressComplement: formValue.contactAddress?.employeeAddressComplement || '',
+      employeeNeighborhood: formValue.contactAddress?.employeeNeighborhood || '',
+      employeeAddressCity: formValue.contactAddress?.employeeAddressCity || '',
+      employeeAddressState: formValue.contactAddress?.employeeAddressState || '',
+      partnerName: formValue.familyInfo?.partnerName || '',
+      partnerCpf: formValue.familyInfo?.partnerCpf || '',
+      partnerBirthday: formValue.familyInfo?.partnerBirthday || null,
+      partnerRg: formValue.familyInfo?.partnerRg || '',
+      dependents: formValue.familyInfo?.dependents || [],
+      admissionDate: formValue.professionalInfo?.admissionDate || null,
+      period: formValue.professionalInfo?.period || '',
+      contractExpirationDate: formValue.professionalInfo?.contractExpirationDate || null,
+      dailyHours: formValue.professionalInfo?.dailyHours || '',
+      weeklyHours: formValue.professionalInfo?.weeklyHours || '',
+      monthlyHours: formValue.professionalInfo?.monthlyHours || '',
+      weeklyClasses: formValue.professionalInfo?.weeklyClasses || '',
+      hasAccumulate: formValue.professionalInfo?.hasAccumulate || false,
+      hasAccumulateCompany: formValue.professionalInfo?.hasAccumulateCompany || '',
+      status: formValue.professionalInfo?.status || null,
+      salary: formValue.financialInfo?.salary || null,
+      salaryBank: formValue.financialInfo?.salaryBank || '',
+      salaryAgency: formValue.financialInfo?.salaryAgency || '',
+      salaryAccount: formValue.financialInfo?.salaryAccount || '',
+      salaryAccountType: formValue.financialInfo?.salaryAccountType || '',
+      familySalary: formValue.financialInfo?.familySalary || null,
+      parenting: formValue.financialInfo?.parenting || '',
+      irpf: formValue.financialInfo?.irpf || '',
+      mealValue: formValue.benefits?.mealValue || null,
+      transport: formValue.benefits?.transport || false,
+      transportType: formValue.benefits?.transportType || '',
+      transportValue: formValue.benefits?.transportValue || null,
+      healthPlan: formValue.benefits?.healthPlan || '',
+      healthCardNumber: formValue.benefits?.healthCardNumber || '',
+      deficiency: formValue.benefits?.deficiency || false,
+      deficiencyDescription: formValue.benefits?.deficiencyDescription || '',
+      college: formValue.collegeInfo?.college || '',
+      course: formValue.collegeInfo?.course || '',
+      trainingPeriod: formValue.collegeInfo?.trainingPeriod || '',
+      ra: formValue.collegeInfo?.ra || '',
+      collegeCep: formValue.collegeInfo?.collegeCep || '',
+      traineeAddress: formValue.collegeInfo?.traineeAddress || '',
+      traineeAddressNumber: formValue.collegeInfo?.traineeAddressNumber || null,
+      traineeAddressNeighborhood: formValue.collegeInfo?.traineeAddressNeighborhood || '',
+      traineeAddressComplement: formValue.collegeInfo?.traineeAddressComplement || '',
+      traineeAddressCity: formValue.collegeInfo?.traineeAddressCity || '',
+      traineeAddressState: formValue.collegeInfo?.traineeAddressState || '',
+      lifInsurancePolicy: formValue.collegeInfo?.lifInsurancePolicy || '',
+      emergencyContacts: formValue.emergencyContacts || []
+    } as Employee;
   }
 }

@@ -1,0 +1,58 @@
+<div class="cracha-container" *ngIf="employee">
+  <div 
+    class="cracha-background"
+    [style.background-image]="'url(' + templateUrl + ')'"
+  >
+    <div class="cracha-content">
+      <!-- Foto do funcionário -->
+      <div class="foto-container">
+        <img 
+          [src]="employeePhoto" 
+          [alt]="employeeName"
+          class="foto-funcionario"
+          (error)="$any($event.target).src='/assets/images/default-avatar.png'"
+        />
+      </div>
+
+      <!-- Informações do funcionário -->
+      <div class="info-container">
+        <h3 class="nome-funcionario">{{ employeeName }}</h3>
+        <p class="cargo-funcionario">{{ employeePosition }}</p>
+        
+        <!-- Informações adicionais se necessário -->
+        <div class="info-adicional" *ngIf="employeeDepartment">
+          <p class="departamento">{{ employeeDepartment }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botões de ação (apenas no modo preview) -->
+  <div class="cracha-actions" *ngIf="showPreview">
+    <button 
+      type="button" 
+      class="btn-action btn-download"
+      (click)="downloadCracha()"
+      title="Baixar crachá"
+    >
+      📥 Download
+    </button>
+    <button 
+      type="button" 
+      class="btn-action btn-print"
+      (click)="printCracha()"
+      title="Imprimir crachá"
+    >
+      🖨️ Imprimir
+    </button>
+  </div>
+</div>
+
+<!-- Mensagem quando não há funcionário -->
+<div class="cracha-placeholder" *ngIf="!employee">
+  <div class="placeholder-content">
+    <p>👤 Nenhum funcionário selecionado</p>
+    <small>Selecione um funcionário para visualizar o crachá</small>
+  </div>
+</div>
+

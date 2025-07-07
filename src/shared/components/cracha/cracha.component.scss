@@ -1,0 +1,269 @@
+// Componente de Crachá - Estilos
+.cracha-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  
+  .cracha-background {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 400px;
+    height: 250px;
+    position: relative;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  .cracha-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  .foto-container {
+    margin-bottom: 16px;
+    
+    .foto-funcionario {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
+      
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+  }
+
+  .info-container {
+    text-align: center;
+    
+    .nome-funcionario {
+      margin: 0 0 8px 0;
+      font-size: 20px;
+      font-weight: bold;
+      line-height: 1.2;
+      max-width: 300px;
+      word-wrap: break-word;
+    }
+    
+    .cargo-funcionario {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+      font-weight: 500;
+      opacity: 0.95;
+      max-width: 300px;
+      word-wrap: break-word;
+    }
+    
+    .info-adicional {
+      .departamento {
+        margin: 0;
+        font-size: 14px;
+        opacity: 0.9;
+        font-style: italic;
+      }
+    }
+  }
+
+  // Botões de ação
+  .cracha-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    
+    .btn-action {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      
+      &.btn-download {
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        color: white;
+        
+        &:hover {
+          background: linear-gradient(135deg, #45a049, #3d8b40);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+      }
+      
+      &.btn-print {
+        background: linear-gradient(135deg, #2196F3, #1976D2);
+        color: white;
+        
+        &:hover {
+          background: linear-gradient(135deg, #1976D2, #1565C0);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}
+
+// Placeholder quando não há funcionário
+.cracha-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 400px;
+  height: 250px;
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  background: #f9f9f9;
+  
+  .placeholder-content {
+    text-align: center;
+    color: #666;
+    
+    p {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      font-weight: 500;
+    }
+    
+    small {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .cracha-container {
+    padding: 16px;
+    
+    .cracha-background {
+      width: 320px;
+      height: 200px;
+    }
+    
+    .foto-container {
+      margin-bottom: 12px;
+      
+      .foto-funcionario {
+        width: 70px;
+        height: 70px;
+        border-width: 3px;
+      }
+    }
+    
+    .info-container {
+      .nome-funcionario {
+        font-size: 16px;
+        max-width: 250px;
+      }
+      
+      .cargo-funcionario {
+        font-size: 14px;
+        max-width: 250px;
+      }
+      
+      .info-adicional {
+        .departamento {
+          font-size: 12px;
+        }
+      }
+    }
+    
+    .cracha-actions {
+      flex-direction: column;
+      width: 100%;
+      
+      .btn-action {
+        width: 100%;
+        justify-content: center;
+        padding: 12px;
+      }
+    }
+  }
+  
+  .cracha-placeholder {
+    width: 320px;
+    height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cracha-container {
+    .cracha-background {
+      width: 280px;
+      height: 175px;
+    }
+    
+    .foto-container {
+      .foto-funcionario {
+        width: 60px;
+        height: 60px;
+      }
+    }
+    
+    .info-container {
+      .nome-funcionario {
+        font-size: 14px;
+        max-width: 200px;
+      }
+      
+      .cargo-funcionario {
+        font-size: 12px;
+        max-width: 200px;
+      }
+    }
+  }
+  
+  .cracha-placeholder {
+    width: 280px;
+    height: 175px;
+  }
+}
+
+// Estilos para impressão
+@media print {
+  .cracha-container {
+    .cracha-actions {
+      display: none;
+    }
+    
+    .cracha-background {
+      box-shadow: none;
+      page-break-inside: avoid;
+    }
+  }
+}
+

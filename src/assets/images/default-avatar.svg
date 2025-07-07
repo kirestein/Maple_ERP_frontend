@@ -1,0 +1,7 @@
+<!-- Placeholder para avatar padrão - será substituído por uma imagem real -->
+<svg width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="45" cy="45" r="45" fill="#E0E0E0"/>
+  <circle cx="45" cy="35" r="15" fill="#BDBDBD"/>
+  <path d="M15 75C15 60 28 50 45 50C62 50 75 60 75 75" fill="#BDBDBD"/>
+</svg>
+

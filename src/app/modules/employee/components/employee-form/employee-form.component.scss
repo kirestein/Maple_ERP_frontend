@@ -203,3 +203,38 @@
 .mat-mdc-form-field {
   transition: all 0.3s ease;
 }
+
+// Estilos para a seção de preview do crachá
+.cracha-preview-card {
+  margin-top: 24px;
+  
+  mat-card-header {
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      mat-icon {
+        color: #1976d2;
+      }
+    }
+  }
+  
+  mat-card-content {
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+  }
+}
+
+// Responsividade para o preview do crachá
+@media (max-width: 768px) {
+  .cracha-preview-card {
+    margin-top: 16px;
+    
+    mat-card-content {
+      padding: 16px;
+    }
+  }
+}
+

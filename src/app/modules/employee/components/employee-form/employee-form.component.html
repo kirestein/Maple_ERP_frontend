@@ -1406,6 +1406,24 @@
   </mat-card-content>
 </mat-card>
 
+<!-- Seção de Preview do Crachá -->
+<mat-card class="cracha-preview-card" *ngIf="employeeForm && employeeForm.valid">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>badge</mat-icon>
+      Preview do Crachá
+    </mat-card-title>
+    <mat-card-subtitle>Visualize como ficará o crachá do funcionário</mat-card-subtitle>
+  </mat-card-header>
+  
+  <mat-card-content>
+    <app-cracha 
+      [employee]="getEmployeePreview()" 
+      [showPreview]="true">
+    </app-cracha>
+  </mat-card-content>
+</mat-card>
+
 <mat-card-actions align="end">
   <button mat-button type="button" (click)="cancel()">Cancelar</button>
   <button
