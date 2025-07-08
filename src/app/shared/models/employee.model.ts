@@ -138,7 +138,7 @@ export interface Department {
 }
 
 export interface Employee {
-  id?: string;
+  id?: number;
   companyNumber?: number;
   companyName?: string;
   fullName?: string;
@@ -224,7 +224,8 @@ export interface Employee {
   familySalary?: number;
   parenting?: string;
   IRPF?: string;
-  status?: EmployeeContractStatus;
+  status?: 'Ativo' | 'Inativo' | 'Licença';
+  photoUrl?: string; // URL da foto no Cloudinary
   jobPosition?: EmployeeCargo;
   department?: Department;
   userId?: string;

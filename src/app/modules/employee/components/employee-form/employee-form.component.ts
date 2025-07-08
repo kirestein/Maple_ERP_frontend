@@ -149,10 +149,10 @@ export class EmployeeFormComponent implements OnInit {
   initForm(): void {
     this.employeeForm = this.fb.group({
       basicInfo: this.fb.group({
-        fullName: ['', [Validators.required]],
-        email: [''],
-        tagName: [''],
-        tagLastName: [''],
+        fullName: ['', [Validators.required, Validators.minLength(2)]],
+        email: ['', [Validators.email]],
+        tagName: ['', [Validators.required]],
+        tagLastName: ['', [Validators.required]],
         birthday: [null],
         gender: [null],
         maritalStatus: [EmployeeMaritalStatus.SOLTEIRO],
@@ -567,60 +567,123 @@ export class EmployeeFormComponent implements OnInit {
 
   // Enviar formulário
   onSubmit(): void {
-    if (!this.employeeForm || this.employeeForm.invalid) {
+    // Validar campos obrigatórios personalizados
+    const validationErrors = this.validateRequiredFields();
+    
+    if (!this.employeeForm || this.employeeForm.invalid || validationErrors.length > 0) {
+      console.error('Formulário inválido:', this.employeeForm?.errors);
+      console.error('Erros de validação customizada:', validationErrors);
+      
       this.markFormGroupTouched(this.employeeForm);
-      this.snackBar.open(
-        'Por favor, corrija os erros no formulário antes de enviar.',
-        'OK',
-        { duration: 3000 }
-      );
+      this.logFormErrors(this.employeeForm);
+      
+      const errorMessage = validationErrors.length > 0 
+        ? validationErrors.join(', ') 
+        : 'Por favor, corrija os erros no formulário antes de enviar.';
+      
+      this.snackBar.open(errorMessage, 'OK', { duration: 5000 });
       return;
     }
 
     this.isSubmitting = true;
-    const employeeData = this.prepareEmployeeData();
     
-    const formData = new FormData();
-    formData.append('employee', JSON.stringify(employeeData));
-    
-    // Adicionar foto se necessário
-    if (this.selectedPhotoFile) {
-      formData.append('photo', this.selectedPhotoFile);
+    try {
+      if (this.isEditMode) {
+        // Para edição, usar JSON simples (sem foto)
+        const updateData = this.prepareUpdateData();
+        console.log('Dados para atualização:', updateData);
+        
+        const operation$ = this.employeeService.updateEmployee(this.employeeId!, updateData);
+        
+        operation$
+          .pipe(finalize(() => (this.isSubmitting = false)))
+          .subscribe({
+            next: (employee: Employee) => {
+              this.snackBar.open('Funcionário atualizado com sucesso!', 'OK', {
+                duration: 3000,
+                panelClass: ['success-snackbar']
+              });
+              this.router.navigate(['/employees']);
+            },
+            error: (error: any) => {
+              this.snackBar.open(
+                `Erro ao atualizar funcionário: ${error.message}`,
+                'OK',
+                { 
+                  duration: 5000,
+                  panelClass: ['error-snackbar']
+                }
+              );
+            },
+          });
+      } else {
+        // Para criação, usar FormData com foto
+        const formData = this.prepareEmployeeData();
+        console.log('FormData preparado para criação');
+        
+        const operation$ = this.employeeService.createEmployee(formData);
+      
+        operation$
+          .pipe(finalize(() => (this.isSubmitting = false)))
+          .subscribe({
+            next: (employee: Employee) => {
+              this.snackBar.open('Funcionário cadastrado com sucesso!', 'OK', {
+                duration: 3000,
+                panelClass: ['success-snackbar']
+              });
+              this.router.navigate(['/employees']);
+            },
+            error: (error: any) => {
+              this.snackBar.open(
+                `Erro ao cadastrar funcionário: ${error.message}`,
+                'OK',
+                { 
+                  duration: 5000,
+                  panelClass: ['error-snackbar']
+                }
+              );
+            },
+          });
+      }
+        
+    } catch (error: any) {
+      this.isSubmitting = false;
+      console.error('Erro ao preparar dados:', error);
+      this.snackBar.open(
+        `Erro ao preparar dados: ${error.message}`,
+        'OK',
+        { duration: 5000 }
+      );
+      return;
     }
+  }
 
-    const operation$ = this.isEditMode && this.employeeId
-      ? this.employeeService.updateEmployee(this.employeeId, formData)
-      : this.employeeService.createEmployee(formData);
-
-    operation$
+  // Método de teste para enviar dados mínimos
+  testMinimalSubmit(): void {
+    console.log('Testando envio com dados mínimos...');
+    
+    const minimalData = {
+      fullName: 'Teste Funcionário',
+      cpf: '12345678901',
+      jobPosition: EmployeeCargo.PROFESSOR,
+      admissionDate: new Date(),
+      status: EmployeeContractStatus.ACTIVE
+    };
+    
+    console.log('Dados mínimos:', minimalData);
+    
+    this.isSubmitting = true;
+    this.employeeService.createEmployee(minimalData as any)
       .pipe(finalize(() => (this.isSubmitting = false)))
       .subscribe({
-        next: (employee) => {
-          const message = this.isEditMode
-            ? 'Funcionário atualizado com sucesso!'
-            : 'Funcionário cadastrado com sucesso!';
-          
-          this.snackBar.open(message, 'OK', {
-            duration: 3000,
-            panelClass: ['success-snackbar']
-          });
-          
-          this.router.navigate(['/employees']);
+        next: (result) => {
+          console.log('Sucesso no teste mínimo:', result);
+          this.snackBar.open('Teste mínimo funcionou!', 'OK', { duration: 3000 });
         },
         error: (error) => {
-          const message = this.isEditMode
-            ? 'Erro ao atualizar funcionário'
-            : 'Erro ao cadastrar funcionário';
-          
-          this.snackBar.open(
-            `${message}: ${error.message}`,
-            'OK',
-            { 
-              duration: 5000,
-              panelClass: ['error-snackbar']
-            }
-          );
-        },
+          console.error('Erro no teste mínimo:', error);
+          this.snackBar.open(`Erro no teste mínimo: ${error.message}`, 'OK', { duration: 5000 });
+        }
       });
   }
 
@@ -629,25 +692,107 @@ export class EmployeeFormComponent implements OnInit {
     this.router.navigate(['/employees']);
   }
 
-  // Preparar dados do funcionário para envio
-  prepareEmployeeData(): Employee {
+  // Preparar dados do funcionário para envio conforme API
+  prepareEmployeeData(): FormData {
     const formValue = this.employeeForm?.value || {};
-    const employee: Employee = {
-      ...(formValue.basicInfo || {}),
-      ...(formValue.documents || {}),
-      ...(formValue.contactAddress || {}),
-      ...(formValue.professionalInfo || {}),
-      ...(formValue.financialInfo || {}),
-      ...(formValue.benefits || {}),
-      ...(formValue.collegeInfo || {}),
-      partnerName: formValue.familyInfo?.partnerName || '',
-      partnerCpf: formValue.familyInfo?.partnerCpf || '',
-      partnerBirthday: formValue.familyInfo?.partnerBirthday || null,
-      partnerRg: formValue.familyInfo?.partnerRg || '',
-      employeeContact: formValue.emergencyContacts || [],
-      employeeDependent: formValue.familyInfo?.dependents || [],
-    };
-    return employee;
+    const basicInfo = formValue.basicInfo || {};
+    
+    console.log('Valores do formulário (raw):', formValue);
+    
+    // Criar FormData conforme especificação da API
+    const formData = new FormData();
+    
+    // CAMPOS OBRIGATÓRIOS conforme API
+    // Nome completo (obrigatório)
+    if (!basicInfo.fullName || !basicInfo.fullName.trim()) {
+      throw new Error('Nome completo é obrigatório');
+    }
+    formData.append('fullName', basicInfo.fullName.trim());
+    
+    // Nome para crachá (obrigatório)
+    if (!basicInfo.tagName || !basicInfo.tagName.trim()) {
+      throw new Error('Nome para crachá é obrigatório');
+    }
+    formData.append('tagName', basicInfo.tagName.trim());
+    
+    // Sobrenome para crachá (obrigatório)
+    if (!basicInfo.tagLastName || !basicInfo.tagLastName.trim()) {
+      throw new Error('Sobrenome para crachá é obrigatório');
+    }
+    formData.append('tagLastName', basicInfo.tagLastName.trim());
+    
+    // Foto (obrigatória para novos funcionários)
+    if (!this.isEditMode && !this.selectedPhotoFile) {
+      throw new Error('Foto é obrigatória para novos funcionários');
+    }
+    if (this.selectedPhotoFile) {
+      formData.append('file', this.selectedPhotoFile);
+    }
+    
+    // CAMPOS OPCIONAIS conforme API
+    const professionalInfo = formValue.professionalInfo || {};
+    
+    // Cargo/função (opcional)
+    if (professionalInfo.jobFunctions && professionalInfo.jobFunctions.trim()) {
+      formData.append('jobFunctions', professionalInfo.jobFunctions.trim());
+    }
+    
+    // Data de nascimento (opcional)
+    if (basicInfo.birthday) {
+      const birthday = new Date(basicInfo.birthday);
+      formData.append('birthday', birthday.toISOString().split('T')[0]); // formato YYYY-MM-DD
+    }
+    
+    console.log('FormData preparado para envio');
+    
+    // Log para debug
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
+    
+    return formData;
+  }
+
+  // Preparar dados para atualização (apenas JSON, sem foto)
+  prepareUpdateData(): any {
+    const formValue = this.employeeForm?.value || {};
+    const basicInfo = formValue.basicInfo || {};
+    const professionalInfo = formValue.professionalInfo || {};
+    const contactAddress = formValue.contactAddress || {};
+    
+    const updateData: any = {};
+    
+    // Campos que podem ser atualizados conforme API
+    if (basicInfo.fullName && basicInfo.fullName.trim()) {
+      updateData.fullName = basicInfo.fullName.trim();
+    }
+    
+    if (professionalInfo.jobFunctions && professionalInfo.jobFunctions.trim()) {
+      updateData.jobFunctions = professionalInfo.jobFunctions.trim();
+    }
+    
+    if (basicInfo.birthday) {
+      const birthday = new Date(basicInfo.birthday);
+      updateData.birthday = birthday.toISOString().split('T')[0];
+    }
+    
+    if (basicInfo.email && basicInfo.email.trim()) {
+      updateData.email = basicInfo.email.trim();
+    }
+    
+    if (contactAddress.phone && contactAddress.phone.trim()) {
+      updateData.phone = contactAddress.phone.trim();
+    }
+    
+    if (contactAddress.mobile && contactAddress.mobile.trim()) {
+      updateData.mobile = contactAddress.mobile.trim();
+    }
+    
+    if (professionalInfo.status) {
+      updateData.status = professionalInfo.status;
+    }
+    
+    return updateData;
   }
 
   // Marcar todos os campos como touched para mostrar validações
@@ -897,12 +1042,33 @@ export class EmployeeFormComponent implements OnInit {
     
     const summary = [];
     
-    // Validar informações básicas
+    // Validar foto obrigatória
+    summary.push({
+      valid: !!(this.selectedPhotoFile || this.selectedPhotoUrl),
+      message: 'Foto é obrigatória',
+      stepIndex: 0
+    });
+    
+    // Validar informações básicas obrigatórias
     const basicInfo = this.employeeForm.get('basicInfo');
     const fullName = basicInfo?.get('fullName')?.value;
     summary.push({
       valid: !!(fullName && fullName.trim().length >= 2),
       message: 'Nome completo é obrigatório (mínimo 2 caracteres)',
+      stepIndex: 0
+    });
+
+    const tagName = basicInfo?.get('tagName')?.value;
+    summary.push({
+      valid: !!(tagName && tagName.trim()),
+      message: 'Nome para crachá é obrigatório',
+      stepIndex: 0
+    });
+
+    const tagLastName = basicInfo?.get('tagLastName')?.value;
+    summary.push({
+      valid: !!(tagLastName && tagLastName.trim()),
+      message: 'Sobrenome para crachá é obrigatório',
       stepIndex: 0
     });
 
@@ -914,56 +1080,6 @@ export class EmployeeFormComponent implements OnInit {
         valid: emailRegex.test(email),
         message: 'E-mail deve ter um formato válido',
         stepIndex: 0
-      });
-    }
-
-    // Validar documentos
-    const documents = this.employeeForm.get('documents');
-    const cpf = documents?.get('cpf')?.value;
-    summary.push({
-      valid: !!(cpf && cpf.trim()),
-      message: 'CPF é obrigatório',
-      stepIndex: 1
-    });
-
-    // Validar contato
-    const contact = this.employeeForm.get('contactAddress');
-    const phone = contact?.get('phone')?.value;
-    const mobile = contact?.get('mobile')?.value;
-    summary.push({
-      valid: !!(phone && phone.trim()) || !!(mobile && mobile.trim()),
-      message: 'Pelo menos um telefone (fixo ou celular) é obrigatório',
-      stepIndex: 2
-    });
-
-    // Validar informações profissionais
-    const professional = this.employeeForm.get('professionalInfo');
-    const jobPosition = professional?.get('jobPosition')?.value;
-    summary.push({
-      valid: !!(jobPosition && jobPosition.trim()),
-      message: 'Cargo é obrigatório',
-      stepIndex: 4
-    });
-
-    const admissionDate = professional?.get('admissionDate')?.value;
-    summary.push({
-      valid: !!admissionDate,
-      message: 'Data de admissão é obrigatória',
-      stepIndex: 4
-    });
-
-    // Validar informações financeiras (se preenchidas)
-    const financial = this.employeeForm.get('financialInfo');
-    const salary = financial?.get('salary')?.value;
-    if (salary && salary > 0) {
-      const bank = financial?.get('salaryBank')?.value;
-      const agency = financial?.get('salaryAgency')?.value;
-      const account = financial?.get('salaryAccount')?.value;
-      
-      summary.push({
-        valid: !!(bank && agency && account),
-        message: 'Se salário informado, dados bancários são obrigatórios',
-        stepIndex: 5
       });
     }
 
@@ -986,5 +1102,57 @@ export class EmployeeFormComponent implements OnInit {
     const summary = this.getValidationSummary();
     const hasErrors = summary.some(item => !item.valid);
     return hasErrors ? 'warning' : 'check_circle';
+  }
+
+  // Log detalhado de erros do formulário
+  logFormErrors(formGroup: FormGroup, groupName = ''): void {
+    if (!formGroup) return;
+    
+    Object.keys(formGroup.controls).forEach(key => {
+      const control = formGroup.get(key);
+      const fullKey = groupName ? `${groupName}.${key}` : key;
+      
+      if (control instanceof FormGroup) {
+        this.logFormErrors(control, fullKey);
+      } else if (control instanceof FormArray) {
+        control.controls.forEach((arrayControl, index) => {
+          if (arrayControl instanceof FormGroup) {
+            this.logFormErrors(arrayControl, `${fullKey}[${index}]`);
+          }
+        });
+      } else if (control && control.errors) {
+        console.error(`Erro no campo ${fullKey}:`, control.errors, 'Valor:', control.value);
+      }
+    });
+  }
+
+  // Validar campos obrigatórios personalizados
+  validateRequiredFields(): string[] {
+    const errors: string[] = [];
+    
+    // Validar foto obrigatória
+    if (!this.selectedPhotoFile && !this.selectedPhotoUrl) {
+      errors.push('Foto é obrigatória');
+    }
+    
+    // Validar nome completo
+    const fullName = this.employeeForm?.get('basicInfo.fullName')?.value;
+    if (!fullName || !fullName.trim()) {
+      errors.push('Nome completo é obrigatório');
+    }
+    
+    // Validar nome para crachá
+    const tagName = this.employeeForm?.get('basicInfo.tagName')?.value;
+    if (!tagName || !tagName.trim()) {
+      errors.push('Nome para crachá é obrigatório');
+    }
+    
+    // Validar sobrenome para crachá
+    const tagLastName = this.employeeForm?.get('basicInfo.tagLastName')?.value;
+    if (!tagLastName || !tagLastName.trim()) {
+      errors.push('Sobrenome para crachá é obrigatório');
+    }
+    
+    return errors;
   }
 }
