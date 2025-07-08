@@ -4,10 +4,16 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:dev": "ng serve --configuration development",
+    "start:prod": "ng serve --configuration production",
     "build": "ng build",
+    "build:dev": "ng build --configuration development",
+    "build:prod": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "npx tsc --noEmit && echo 'TypeScript compilation check passed!'"
+    "lint": "npx tsc --noEmit && echo 'TypeScript compilation check passed!'",
+    "env:setup": "cp .env.example .env && echo 'Environment file created. Please edit .env with your values.'",
+    "env:check": "node -e \"console.log('Environment check:', process.env.VITE_API_URL_DEV ? 'DEV URL set' : 'DEV URL missing', process.env.VITE_API_URL_PROD ? 'PROD URL set' : 'PROD URL missing')\""
   },
   "private": true,
   "dependencies": {

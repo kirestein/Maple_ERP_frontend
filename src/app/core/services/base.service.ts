@@ -2,15 +2,19 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
+import { EnvironmentService } from './environment.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BaseService {
-  protected apiUrl = environment.apiUrl;
+  protected apiUrl: string;
+  protected envService: EnvironmentService;
 
-  constructor(protected http: HttpClient) {}
+  constructor(protected http: HttpClient, envService?: EnvironmentService) {
+    this.envService = envService || new EnvironmentService();
+    this.apiUrl = this.envService.apiUrl;
+  }
 
   protected handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'Erro desconhecido';
@@ -24,7 +28,7 @@ export class BaseService {
     // Mensagens específicas por status code
     switch (error.status) {
       case 0:
-        errorMessage = 'Erro de conexão. Verifique sua internet e se o servidor está rodando.';
+        errorMessage = this.envService.config.errorMessages.network;
         break;
       case 400:
         errorMessage = error.error?.message || 'Dados inválidos. Verifique os campos obrigatórios.';
@@ -39,14 +43,17 @@ export class BaseService {
         errorMessage = 'Dados duplicados. Verifique se o funcionário já existe.';
         break;
       case 500:
-        errorMessage = 'Erro interno do servidor. Tente novamente mais tarde.';
+        errorMessage = this.envService.config.errorMessages.server;
         break;
       case 503:
         errorMessage = 'Serviços indisponíveis. Tente novamente mais tarde.';
         break;
+      default:
+        errorMessage = this.envService.config.errorMessages.default;
+        break;
     }
 
-    console.error('Erro na API:', error);
+    this.envService.log('Erro na API:', error);
     return throwError(() => new Error(errorMessage));
   }
 }
