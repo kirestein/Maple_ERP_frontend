@@ -1,16 +1,46 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { BaseService } from './base.service';
 import { Employee } from '../../shared/models/employee.model';
+
+// Interfaces para responses da API
+export interface SearchEmployeesResponse {
+  employees: Employee[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface CreateEmployeeRequest {
+  fullName: string;
+  tagName: string;
+  tagLastName: string;
+  jobFunctions?: string;
+  birthday?: string;
+  file: File;
+}
+
+export interface UpdateEmployeeRequest {
+  fullName?: string;
+  jobFunctions?: string;
+  birthday?: string;
+  email?: string;
+  phone?: string;
+  mobile?: string;
+  status?: 'Ativo' | 'Inativo' | 'Licença';
+}
 
 @Injectable({
   providedIn: 'root',
 })
-export class EmployeeService {
-  // Base URL for the backend API
-  private API_URL = 'https://maple-erp-backend.onrender.com/employees';
+export class EmployeeService extends BaseService {
+  private endpoint = '/employees';
 
-  constructor(private http: HttpClient) {}
+  constructor(protected override http: HttpClient) {
+    super(http);
+  }
 
   /**
    * Retrieves all employees from the backend.
@@ -18,8 +48,15 @@ export class EmployeeService {
    */
   getEmployees(): Observable<Employee[]> {
     return this.http
-      .get<Employee[]>(this.API_URL)
+      .get<Employee[]>(`${this.apiUrl}${this.endpoint}`)
       .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Retrieves all employees (alias for getEmployees for compatibility)
+   */
+  getAllEmployees(): Observable<Employee[]> {
+    return this.getEmployees();
   }
 
   /**
@@ -29,58 +66,120 @@ export class EmployeeService {
    */
   getEmployeeById(id: string | number): Observable<Employee> {
     return this.http
-      .get<Employee>(`${this.API_URL}/${id}`)
+      .get<Employee>(`${this.apiUrl}${this.endpoint}/${id}`)
       .pipe(catchError(this.handleError));
   }
 
   /**
    * Creates a new employee by sending form data (including photo) to the backend.
-   * @param data FormData containing employee details and the photo file.
+   * @param employeeData FormData containing employee details and the photo file.
    * @returns Observable<Employee> - The created employee data.
    */
-  createEmployee(data: FormData): Observable<Employee> {
+  createEmployee(employeeData: FormData): Observable<Employee> {
     return this.http
-      .post<Employee>(this.API_URL, data)
+      .post<Employee>(`${this.apiUrl}${this.endpoint}`, employeeData)
       .pipe(catchError(this.handleError));
   }
 
   /**
    * Updates an existing employee.
    * @param id The ID of the employee to update.
-   * @param data FormData or Employee object containing updated employee details.
+   * @param employeeData Updated employee data (JSON only, no file upload for updates).
    * @returns Observable<Employee> - The updated employee data.
    */
   updateEmployee(
     id: string | number,
-    data: FormData | Partial<Employee>
+    employeeData: UpdateEmployeeRequest
   ): Observable<Employee> {
     return this.http
-      .put<Employee>(`${this.API_URL}/${id}`, data)
+      .put<Employee>(`${this.apiUrl}${this.endpoint}/${id}`, employeeData)
       .pipe(catchError(this.handleError));
   }
 
   /**
    * Deletes an employee from the system.
    * @param id The ID of the employee to delete.
-   * @returns Observable<any> - The response from the backend.
+   * @returns Observable<{message: string, deletedId: number}> - The response from the backend.
    */
-  deleteEmployee(id: string | number): Observable<any> {
+  deleteEmployee(id: string | number): Observable<{message: string, deletedId: number}> {
     return this.http
-      .delete(`${this.API_URL}/${id}`)
+      .delete<{message: string, deletedId: number}>(`${this.apiUrl}${this.endpoint}/${id}`)
       .pipe(catchError(this.handleError));
   }
 
   /**
-   * Retrieves the employee badge PDF from the backend.
+   * Search employees with filters and pagination.
+   * @param params Search parameters
+   * @returns Observable<SearchEmployeesResponse> - Search results with pagination
+   */
+  searchEmployees(params: {
+    name?: string;
+    jobFunction?: string;
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Observable<SearchEmployeesResponse> {
+    const queryParams = new URLSearchParams();
+    
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        queryParams.append(key, value.toString());
+      }
+    });
+
+    const url = `${this.apiUrl}${this.endpoint}/search?${queryParams.toString()}`;
+    return this.http.get<SearchEmployeesResponse>(url)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Generates individual employee badge PDF.
+   * @param id The ID of the employee.
+   * @returns Observable<Blob> - The PDF content as a Blob.
+   */
+  generateBadge(id: string | number): Observable<Blob> {
+    return this.http
+      .get(`${this.apiUrl}${this.endpoint}/${id}/badge`, {
+        responseType: 'blob'
+      })
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Retrieves the employee badge PDF from the backend (alias for compatibility).
    * @param id The ID of the employee.
    * @returns Observable<Blob> - The PDF content as a Blob.
    */
   getBadge(id: string | number): Observable<Blob> {
-    return this.http
-      .get(`${this.API_URL}/${id}/badge`, {
-        responseType: 'blob', // Important: ensures the response is treated as a file blob
-      })
-      .pipe(catchError(this.handleError));
+    return this.generateBadge(id);
+  }
+
+  /**
+   * Generates multiple employee badges in a single PDF.
+   * @param employeeIds Array of employee IDs
+   * @returns Observable<Blob> - The PDF content as a Blob.
+   */
+  generateMultipleBadges(employeeIds: number[]): Observable<Blob> {
+    return this.http.post(`${this.apiUrl}${this.endpoint}/badges`, 
+      { employeeIds }, 
+      { responseType: 'blob' }
+    ).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Exports employee data in CSV or JSON format.
+   * @param format Export format ('csv' or 'json')
+   * @param status Optional status filter
+   * @returns Observable<Blob> - The exported file as a Blob.
+   */
+  exportEmployees(format: 'csv' | 'json' = 'csv', status?: string): Observable<Blob> {
+    const params = new URLSearchParams();
+    params.append('format', format);
+    if (status) params.append('status', status);
+
+    return this.http.get(`${this.apiUrl}${this.endpoint}/export?${params.toString()}`, {
+      responseType: 'blob'
+    }).pipe(catchError(this.handleError));
   }
 
   /**
@@ -90,50 +189,11 @@ export class EmployeeService {
    */
   getDocument(id: string | number): Observable<Blob> {
     return this.http
-      .get(`${this.API_URL}/${id}/document`, {
-        responseType: 'blob', // Important: ensures the response is treated as a file blob
+      .get(`${this.apiUrl}${this.endpoint}/${id}/document`, {
+        responseType: 'blob'
       })
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Generic error handler for HTTP requests.
-   * @param error The HTTP error response.
-   * @returns Observable<never> - An observable that errors with a user-friendly message.
-   */
-  private handleError(error: HttpErrorResponse) {
-    let errorMessage = 'Ocorreu um erro na comunicação com o servidor.';
 
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
-      errorMessage = `Erro: ${error.error.message}`;
-    } else {
-      // Server-side error
-      errorMessage = `Código: ${error.status}, Mensagem: ${error.message}`;
-
-      // Add more specific error messages based on status codes
-      switch (error.status) {
-        case 404:
-          errorMessage = 'Recurso não encontrado no servidor.';
-          break;
-        case 403:
-          errorMessage =
-            'Acesso negado. Você não tem permissão para esta operação.';
-          break;
-        case 401:
-          errorMessage = 'Não autorizado. Faça login novamente.';
-          break;
-        case 400:
-          errorMessage = 'Requisição inválida. Verifique os dados enviados.';
-          break;
-        case 500:
-          errorMessage =
-            'Erro interno do servidor. Tente novamente mais tarde.';
-          break;
-      }
-    }
-
-    console.error('Erro na requisição:', error);
-    return throwError(() => new Error(errorMessage));
-  }
 }
