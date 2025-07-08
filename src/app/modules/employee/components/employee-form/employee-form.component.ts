@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs';
 
 // Material Imports
-import { MatStepperModule } from '@angular/material/stepper';
+import { MatStepperModule, MatStepper } from '@angular/material/stepper';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -73,6 +73,8 @@ import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
   styleUrls: ['./employee-form.component.scss'],
 })
 export class EmployeeFormComponent implements OnInit {
+  @ViewChild('stepper') stepper!: MatStepper;
+  
   employeeForm!: FormGroup;
   isEditMode = false;
   employeeId: string | null = null;
@@ -790,5 +792,199 @@ export class EmployeeFormComponent implements OnInit {
       return;
     }
     this.onSubmit();
+  }
+
+  /**
+   * Navegar para um step específico
+   */
+  goToStep(stepIndex: number): void {
+    if (this.stepper && stepIndex >= 0 && stepIndex < this.stepper.steps.length) {
+      this.stepper.selectedIndex = stepIndex;
+    }
+  }
+
+  /**
+   * Formatar data para exibição
+   */
+  formatDate(date: any): string {
+    if (!date) return '';
+    
+    if (date instanceof Date) {
+      return date.toLocaleDateString('pt-BR');
+    }
+    
+    // Se for string, tentar converter
+    const dateObj = new Date(date);
+    if (!isNaN(dateObj.getTime())) {
+      return dateObj.toLocaleDateString('pt-BR');
+    }
+    
+    return date.toString();
+  }
+
+  /**
+   * Formatar valor monetário
+   */
+  formatCurrency(value: any): string {
+    if (!value) return '';
+    
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    if (isNaN(numValue)) return value.toString();
+    
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(numValue);
+  }
+
+  /**
+   * Obter endereço completo formatado
+   */
+  getFullAddress(): string {
+    const addressGroup = this.employeeForm?.get('contactAddress');
+    if (!addressGroup) return '';
+
+    const getValue = (fieldName: string) => {
+      const value = addressGroup.get(fieldName)?.value;
+      return value && typeof value === 'string' ? value.trim() : '';
+    };
+
+    const address = getValue('employeeAddress');
+    const number = getValue('employeeAddressNumber');
+    const complement = getValue('employeeAddressComplement');
+    const neighborhood = getValue('employeeNeighborhood');
+    const city = getValue('employeeAddressCity');
+    const state = getValue('employeeAddressState');
+
+    const parts: string[] = [];
+    
+    // Endereço + número
+    if (address || number) {
+      if (address && number) {
+        parts.push(`${address}, ${number}`);
+      } else {
+        parts.push(address || number);
+      }
+    }
+    
+    // Complemento
+    if (complement) {
+      parts.push(complement);
+    }
+    
+    // Bairro
+    if (neighborhood) {
+      parts.push(neighborhood);
+    }
+    
+    // Cidade e estado
+    if (city || state) {
+      if (city && state) {
+        parts.push(`${city} - ${state}`);
+      } else {
+        parts.push(city || state);
+      }
+    }
+
+    return parts.join(', ');
+  }
+
+  /**
+   * Obter resumo de validação
+   */
+  getValidationSummary(): Array<{valid: boolean, message: string, stepIndex: number}> {
+    if (!this.employeeForm) return [];
+    
+    const summary = [];
+    
+    // Validar informações básicas
+    const basicInfo = this.employeeForm.get('basicInfo');
+    const fullName = basicInfo?.get('fullName')?.value;
+    summary.push({
+      valid: !!(fullName && fullName.trim().length >= 2),
+      message: 'Nome completo é obrigatório (mínimo 2 caracteres)',
+      stepIndex: 0
+    });
+
+    // Validar email se fornecido
+    const email = basicInfo?.get('email')?.value;
+    if (email && email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      summary.push({
+        valid: emailRegex.test(email),
+        message: 'E-mail deve ter um formato válido',
+        stepIndex: 0
+      });
+    }
+
+    // Validar documentos
+    const documents = this.employeeForm.get('documents');
+    const cpf = documents?.get('cpf')?.value;
+    summary.push({
+      valid: !!(cpf && cpf.trim()),
+      message: 'CPF é obrigatório',
+      stepIndex: 1
+    });
+
+    // Validar contato
+    const contact = this.employeeForm.get('contactAddress');
+    const phone = contact?.get('phone')?.value;
+    const mobile = contact?.get('mobile')?.value;
+    summary.push({
+      valid: !!(phone && phone.trim()) || !!(mobile && mobile.trim()),
+      message: 'Pelo menos um telefone (fixo ou celular) é obrigatório',
+      stepIndex: 2
+    });
+
+    // Validar informações profissionais
+    const professional = this.employeeForm.get('professionalInfo');
+    const jobPosition = professional?.get('jobPosition')?.value;
+    summary.push({
+      valid: !!(jobPosition && jobPosition.trim()),
+      message: 'Cargo é obrigatório',
+      stepIndex: 4
+    });
+
+    const admissionDate = professional?.get('admissionDate')?.value;
+    summary.push({
+      valid: !!admissionDate,
+      message: 'Data de admissão é obrigatória',
+      stepIndex: 4
+    });
+
+    // Validar informações financeiras (se preenchidas)
+    const financial = this.employeeForm.get('financialInfo');
+    const salary = financial?.get('salary')?.value;
+    if (salary && salary > 0) {
+      const bank = financial?.get('salaryBank')?.value;
+      const agency = financial?.get('salaryAgency')?.value;
+      const account = financial?.get('salaryAccount')?.value;
+      
+      summary.push({
+        valid: !!(bank && agency && account),
+        message: 'Se salário informado, dados bancários são obrigatórios',
+        stepIndex: 5
+      });
+    }
+
+    return summary;
+  }
+
+  /**
+   * Obter classe CSS para o resumo de validação
+   */
+  getValidationSummaryClass(): string {
+    const summary = this.getValidationSummary();
+    const hasErrors = summary.some(item => !item.valid);
+    return hasErrors ? 'validation-error' : 'validation-success';
+  }
+
+  /**
+   * Obter ícone para o resumo de validação
+   */
+  getValidationIcon(): string {
+    const summary = this.getValidationSummary();
+    const hasErrors = summary.some(item => !item.valid);
+    return hasErrors ? 'warning' : 'check_circle';
   }
 }
