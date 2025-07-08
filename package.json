@@ -13,7 +13,9 @@
     "test": "ng test",
     "lint": "npx tsc --noEmit && echo 'TypeScript compilation check passed!'",
     "env:setup": "cp .env.example .env && echo 'Environment file created. Please edit .env with your values.'",
-    "env:check": "node -e \"console.log('Environment check:', process.env.VITE_API_URL_DEV ? 'DEV URL set' : 'DEV URL missing', process.env.VITE_API_URL_PROD ? 'PROD URL set' : 'PROD URL missing')\""
+    "env:check": "node -e \"console.log('Environment check:', process.env.VITE_API_URL_DEV ? 'DEV URL set' : 'DEV URL missing', process.env.VITE_API_URL_PROD ? 'PROD URL set' : 'PROD URL missing')\"",
+    "netlify:build": "node scripts/netlify-build.js && npm run build:prod",
+    "netlify:serve": "npm run netlify:build && npx serve dist/maple-erp-frontend/browser"
   },
   "private": true,
   "dependencies": {
