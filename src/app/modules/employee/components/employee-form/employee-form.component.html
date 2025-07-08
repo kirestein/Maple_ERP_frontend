@@ -1381,22 +1381,297 @@
         <!-- ETAPA 10: REVISÃO E ENVIO -->
         <mat-step>
           <ng-template matStepLabel>Revisar e Enviar</ng-template>
-          <div class="step-content">
+          <div class="step-content review-step">
             <h3>Revise as informações antes de enviar</h3>
-            <p>
-              Verifique se todos os dados estão corretos. Você pode voltar para
-              editar qualquer seção se necessário.
+            <p class="review-subtitle">
+              Verifique se todos os dados estão corretos. Clique em qualquer campo para editá-lo rapidamente.
             </p>
 
-            <div class="button-row">
+            <!-- SEÇÃO: FOTO E INFORMAÇÕES BÁSICAS -->
+            <mat-expansion-panel expanded="true" class="review-section">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>person</mat-icon>
+                  Informações Básicas
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              
+              <div class="review-content">
+                <div class="photo-review">
+                  <div class="photo-preview-small" 
+                       [style.backgroundImage]="selectedPhotoUrl ? 'url(' + selectedPhotoUrl + ')' : 'none'">
+                    <mat-icon *ngIf="!selectedPhotoUrl">person</mat-icon>
+                  </div>
+                  <button mat-stroked-button (click)="fileInput.click()" type="button">
+                    <mat-icon>photo_camera</mat-icon>
+                    {{ selectedPhotoUrl ? 'Alterar' : 'Adicionar' }} Foto
+                  </button>
+                </div>
+
+                <div class="review-fields">
+                  <div class="review-field-group">
+                    <div class="review-field" (click)="goToStep(0)">
+                      <span class="field-label">Nome Completo:</span>
+                      <span class="field-value">{{ employeeForm.get('basicInfo.fullName')?.value || '(não informado)' }}</span>
+                      <mat-icon class="edit-icon">edit</mat-icon>
+                    </div>
+                    
+                    <div class="review-field" (click)="goToStep(0)">
+                      <span class="field-label">E-mail:</span>
+                      <span class="field-value">{{ employeeForm.get('basicInfo.email')?.value || '(não informado)' }}</span>
+                      <mat-icon class="edit-icon">edit</mat-icon>
+                    </div>
+
+                    <div class="review-field" (click)="goToStep(0)">
+                      <span class="field-label">Data de Nascimento:</span>
+                      <span class="field-value">{{ formatDate(employeeForm.get('basicInfo.birthday')?.value) || '(não informado)' }}</span>
+                      <mat-icon class="edit-icon">edit</mat-icon>
+                    </div>
+
+                    <div class="review-field" (click)="goToStep(0)">
+                      <span class="field-label">Gênero:</span>
+                      <span class="field-value">{{ employeeForm.get('basicInfo.gender')?.value || '(não informado)' }}</span>
+                      <mat-icon class="edit-icon">edit</mat-icon>
+                    </div>
+
+                    <div class="review-field" (click)="goToStep(0)">
+                      <span class="field-label">Estado Civil:</span>
+                      <span class="field-value">{{ employeeForm.get('basicInfo.maritalStatus')?.value || '(não informado)' }}</span>
+                      <mat-icon class="edit-icon">edit</mat-icon>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </mat-expansion-panel>
+
+            <!-- SEÇÃO: DOCUMENTOS -->
+            <mat-expansion-panel class="review-section">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>description</mat-icon>
+                  Documentos
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              
+              <div class="review-content">
+                <div class="review-fields">
+                  <div class="review-field" (click)="goToStep(1)">
+                    <span class="field-label">CPF:</span>
+                    <span class="field-value">{{ employeeForm.get('documents.cpf')?.value || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+
+                  <div class="review-field" (click)="goToStep(1)">
+                    <span class="field-label">RG:</span>
+                    <span class="field-value">{{ employeeForm.get('documents.rg')?.value || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+
+                  <div class="review-field" (click)="goToStep(1)">
+                    <span class="field-label">CTPS:</span>
+                    <span class="field-value">{{ employeeForm.get('documents.ctps')?.value || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+
+                  <div class="review-field" (click)="goToStep(1)">
+                    <span class="field-label">PIS/PASEP:</span>
+                    <span class="field-value">{{ employeeForm.get('documents.pisPasep')?.value || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+                </div>
+              </div>
+            </mat-expansion-panel>
+
+            <!-- SEÇÃO: CONTATO E ENDEREÇO -->
+            <mat-expansion-panel class="review-section">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>location_on</mat-icon>
+                  Contato e Endereço
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              
+              <div class="review-content">
+                <div class="review-fields">
+                  <div class="review-field" (click)="goToStep(2)">
+                    <span class="field-label">Telefone:</span>
+                    <span class="field-value">{{ employeeForm.get('contactAddress.phone')?.value || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+
+                  <div class="review-field" (click)="goToStep(2)">
+                    <span class="field-label">Celular:</span>
+                    <span class="field-value">{{ employeeForm.get('contactAddress.mobile')?.value || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+
+                  <div class="review-field" (click)="goToStep(2)">
+                    <span class="field-label">CEP:</span>
+                    <span class="field-value">{{ employeeForm.get('contactAddress.cep')?.value || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+
+                  <div class="review-field" (click)="goToStep(2)">
+                    <span class="field-label">Endereço Completo:</span>
+                    <span class="field-value">{{ getFullAddress() || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+                </div>
+              </div>
+            </mat-expansion-panel>
+
+            <!-- SEÇÃO: INFORMAÇÕES PROFISSIONAIS -->
+            <mat-expansion-panel class="review-section">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>work</mat-icon>
+                  Informações Profissionais
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              
+              <div class="review-content">
+                <div class="review-fields">
+                  <div class="review-field" (click)="goToStep(4)">
+                    <span class="field-label">Cargo:</span>
+                    <span class="field-value">{{ employeeForm.get('professionalInfo.jobPosition')?.value || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+
+                  <div class="review-field" (click)="goToStep(4)">
+                    <span class="field-label">Data de Admissão:</span>
+                    <span class="field-value">{{ formatDate(employeeForm.get('professionalInfo.admissionDate')?.value) || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+
+                  <div class="review-field" (click)="goToStep(4)">
+                    <span class="field-label">Status:</span>
+                    <span class="field-value">{{ employeeForm.get('professionalInfo.status')?.value || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+
+                  <div class="review-field" (click)="goToStep(4)">
+                    <span class="field-label">Período:</span>
+                    <span class="field-value">{{ employeeForm.get('professionalInfo.period')?.value || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+                </div>
+              </div>
+            </mat-expansion-panel>
+
+            <!-- SEÇÃO: INFORMAÇÕES FINANCEIRAS -->
+            <mat-expansion-panel class="review-section">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>attach_money</mat-icon>
+                  Informações Financeiras
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              
+              <div class="review-content">
+                <div class="review-fields">
+                  <div class="review-field" (click)="goToStep(5)">
+                    <span class="field-label">Salário:</span>
+                    <span class="field-value">{{ formatCurrency(employeeForm.get('financialInfo.salary')?.value) || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+
+                  <div class="review-field" (click)="goToStep(5)">
+                    <span class="field-label">Banco:</span>
+                    <span class="field-value">{{ employeeForm.get('financialInfo.salaryBank')?.value || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+
+                  <div class="review-field" (click)="goToStep(5)">
+                    <span class="field-label">Agência:</span>
+                    <span class="field-value">{{ employeeForm.get('financialInfo.salaryAgency')?.value || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+
+                  <div class="review-field" (click)="goToStep(5)">
+                    <span class="field-label">Conta:</span>
+                    <span class="field-value">{{ employeeForm.get('financialInfo.salaryAccount')?.value || '(não informado)' }}</span>
+                    <mat-icon class="edit-icon">edit</mat-icon>
+                  </div>
+                </div>
+              </div>
+            </mat-expansion-panel>
+
+            <!-- SEÇÃO: CONTATOS DE EMERGÊNCIA -->
+            <mat-expansion-panel class="review-section">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>contact_emergency</mat-icon>
+                  Contatos de Emergência
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              
+              <div class="review-content">
+                <div class="emergency-contacts-review">
+                  <div *ngFor="let contact of emergencyContacts.controls; let i = index" 
+                       class="contact-review-item" 
+                       (click)="goToStep(8)">
+                    <div class="contact-header">
+                      <span class="contact-number">Contato {{ i + 1 }}</span>
+                      <mat-icon class="edit-icon">edit</mat-icon>
+                    </div>
+                    <div class="contact-details">
+                      <span><strong>Nome:</strong> {{ contact.get('contactName')?.value || '(não informado)' }}</span>
+                      <span><strong>Telefone:</strong> {{ contact.get('contactPhone')?.value || '(não informado)' }}</span>
+                      <span><strong>Parentesco:</strong> {{ contact.get('contactRelationship')?.value || '(não informado)' }}</span>
+                    </div>
+                  </div>
+                  
+                  <div *ngIf="emergencyContacts.length === 0" class="no-contacts">
+                    <span>Nenhum contato de emergência cadastrado</span>
+                    <button mat-button color="primary" (click)="goToStep(8)" type="button">
+                      <mat-icon>add</mat-icon>
+                      Adicionar Contato
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </mat-expansion-panel>
+
+            <!-- RESUMO DE VALIDAÇÃO -->
+            <mat-card class="validation-summary" [ngClass]="getValidationSummaryClass()">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>{{ getValidationIcon() }}</mat-icon>
+                  Status da Validação
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="validation-item" *ngFor="let validation of getValidationSummary()">
+                  <mat-icon [color]="validation.valid ? 'primary' : 'warn'">
+                    {{ validation.valid ? 'check_circle' : 'error' }}
+                  </mat-icon>
+                  <span>{{ validation.message }}</span>
+                  <button *ngIf="!validation.valid" 
+                          mat-button 
+                          color="primary" 
+                          (click)="goToStep(validation.stepIndex)" 
+                          type="button">
+                    Corrigir
+                  </button>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <div class="button-row review-actions">
               <button mat-button matStepperPrevious type="button">
+                <mat-icon>arrow_back</mat-icon>
                 Voltar
               </button>
               <button mat-button (click)="resetForm()" type="button">
-                Limpar
+                <mat-icon>clear_all</mat-icon>
+                Limpar Tudo
               </button>
-              <button mat-raised-button color="primary" type="submit">
-                Salvar Funcionário
+              <button mat-raised-button 
+                      color="primary" 
+                      type="submit"
+                      [disabled]="!employeeForm || employeeForm.invalid || isSubmitting">
+                <mat-icon>{{ isSubmitting ? 'hourglass_empty' : 'save' }}</mat-icon>
+                {{ isSubmitting ? 'Salvando...' : (isEditMode ? 'Atualizar Funcionário' : 'Salvar Funcionário') }}
               </button>
             </div>
           </div>

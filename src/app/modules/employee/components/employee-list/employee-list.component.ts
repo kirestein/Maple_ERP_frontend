@@ -58,10 +58,10 @@ export class EmployeeListComponent implements OnInit {
         })
       )
       .subscribe({
-        next: (data) => {
+        next: (data: Employee[]) => {
           this.employees = data;
         },
-        error: (err) => {
+        error: (err: any) => {
           this.error = err.message || 'Erro ao carregar funcionários';
           this.snackBar.open(
             this.error || 'Erro ao carregar funcionários',
@@ -78,7 +78,7 @@ export class EmployeeListComponent implements OnInit {
   /**
    * Exclui um funcionário após confirmação
    */
-  deleteEmployee(id: string | number): void {
+  deleteEmployee(id: string): void {
     if (confirm('Tem certeza que deseja excluir este funcionário?')) {
       this.employeeService.deleteEmployee(id).subscribe({
         next: () => {
@@ -88,7 +88,7 @@ export class EmployeeListComponent implements OnInit {
           });
           this.loadEmployees(); // Recarrega a lista após exclusão
         },
-        error: (err) => {
+        error: (err: any) => {
           this.snackBar.open(
             err.message || 'Erro ao excluir funcionário',
             'Fechar',

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
-import { catchError, map, retry } from 'rxjs/operators';
-import { Employee, CreateEmployeeDto, UpdateEmployeeDto } from '../../shared/models/employee.model';
+import { catchError, map, retry, switchMap } from 'rxjs/operators';
+import { Employee, CreateEmployeeDto, UpdateEmployeeDto, EmployeeContractStatus } from '../../shared/models/employee.model';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -157,6 +157,15 @@ export class EmployeeService {
   }
 
   /**
+   * Buscar todos os funcionários sem paginação (método simplificado)
+   */
+  getEmployees(): Observable<Employee[]> {
+    return this.getAllEmployees(1, 100).pipe(
+      map(response => response.data)
+    );
+  }
+
+  /**
    * Buscar funcionário por ID
    */
   getEmployeeById(id: string): Observable<Employee> {
@@ -190,11 +199,15 @@ export class EmployeeService {
   /**
    * Criar novo funcionário
    */
-  createEmployee(employeeData: FormData): Observable<Employee> {
+  createEmployee(employeeData: CreateEmployeeDto | FormData): Observable<Employee> {
     this.loadingSubject.next(true);
     
+    // Determinar se é FormData ou objeto
+    const isFormData = employeeData instanceof FormData;
+    const headers = isFormData ? this.getFormDataHeaders() : this.getHeaders();
+    
     return this.http.post<ApiResponse<Employee>>(this.EMPLOYEES_ENDPOINT, employeeData, {
-      headers: this.getFormDataHeaders()
+      headers: headers
     }).pipe(
       retry(1),
       map(response => response.data),
@@ -226,13 +239,17 @@ export class EmployeeService {
   }
 
   /**
-   * Atualizar funcionário existente
+   * Atualizar funcionário existente (PUT - substitui completamente)
    */
-  updateEmployee(id: string, employeeData: FormData): Observable<Employee> {
+  updateEmployee(id: string, employeeData: UpdateEmployeeDto | FormData): Observable<Employee> {
     this.loadingSubject.next(true);
     
+    // Determinar se é FormData ou objeto
+    const isFormData = employeeData instanceof FormData;
+    const headers = isFormData ? this.getFormDataHeaders() : this.getHeaders();
+    
     return this.http.put<ApiResponse<Employee>>(`${this.EMPLOYEES_ENDPOINT}/${id}`, employeeData, {
-      headers: this.getFormDataHeaders()
+      headers: headers
     }).pipe(
       retry(1),
       map(response => response.data),
@@ -245,6 +262,46 @@ export class EmployeeService {
             id: id,
             fullName: 'Funcionário Atualizado',
             email: 'atualizado@empresa.com',
+            updatedAt: new Date()
+          };
+          return this.simulateApiResponse(mockEmployee).pipe(map(res => res.data));
+        }
+        
+        return this.handleError(error);
+      }),
+      map(data => {
+        this.loadingSubject.next(false);
+        // Atualizar cache local
+        const currentEmployees = this.employeesSubject.value;
+        const updatedEmployees = currentEmployees.map(emp => emp.id === id ? data : emp);
+        this.employeesSubject.next(updatedEmployees);
+        return data;
+      })
+    );
+  }
+
+  /**
+   * Atualizar funcionário parcialmente (PATCH - atualiza apenas campos específicos)
+   */
+  patchEmployee(id: string, partialData: Partial<Employee>): Observable<Employee> {
+    this.loadingSubject.next(true);
+    
+    return this.http.patch<ApiResponse<Employee>>(`${this.EMPLOYEES_ENDPOINT}/${id}`, partialData, {
+      headers: this.getHeaders()
+    }).pipe(
+      retry(1),
+      map(response => response.data),
+      catchError(error => {
+        this.loadingSubject.next(false);
+        
+        if (error.status === 0) {
+          console.warn('Backend não disponível. Simulando atualização parcial...');
+          const currentEmployee = this.employeesSubject.value.find(emp => emp.id === id);
+          const mockEmployee: Employee = {
+            fullName: 'Funcionário Atualizado',
+            ...currentEmployee,
+            ...partialData,
+            id: id,
             updatedAt: new Date()
           };
           return this.simulateApiResponse(mockEmployee).pipe(map(res => res.data));
@@ -402,6 +459,79 @@ export class EmployeeService {
   }
 
   /**
+   * Ativar funcionário
+   */
+  activateEmployee(id: string): Observable<Employee> {
+    return this.patchEmployee(id, { status: EmployeeContractStatus.ACTIVE });
+  }
+
+  /**
+   * Desativar funcionário
+   */
+  deactivateEmployee(id: string): Observable<Employee> {
+    return this.patchEmployee(id, { status: EmployeeContractStatus.INACTIVE });
+  }
+
+  /**
+   * Atualizar apenas foto do funcionário
+   */
+  updateEmployeePhoto(id: string, photoFile: File): Observable<Employee> {
+    const formData = new FormData();
+    formData.append('photo', photoFile);
+    
+    return this.patchEmployee(id, formData as any);
+  }
+
+  /**
+   * Converter Employee para FormData
+   */
+  convertToFormData(employee: Partial<Employee>): FormData {
+    const formData = new FormData();
+    
+    Object.entries(employee).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        if (value instanceof Date) {
+          formData.append(key, value.toISOString());
+        } else if (typeof value === 'object' && !(value instanceof File)) {
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, value.toString());
+        }
+      }
+    });
+    
+    return formData;
+  }
+
+  /**
+   * Validar dados do funcionário antes de enviar
+   */
+  validateEmployee(employee: Partial<Employee>): { valid: boolean; errors: string[] } {
+    const errors: string[] = [];
+    
+    if (!employee.fullName || employee.fullName.trim().length < 2) {
+      errors.push('Nome completo é obrigatório e deve ter pelo menos 2 caracteres');
+    }
+    
+    if (employee.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(employee.email)) {
+      errors.push('Email deve ter um formato válido');
+    }
+    
+    if (employee.cpf && !/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(employee.cpf)) {
+      errors.push('CPF deve seguir o formato XXX.XXX.XXX-XX');
+    }
+    
+    if (employee.phone && !/^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(employee.phone)) {
+      errors.push('Telefone deve seguir o formato (XX) XXXXX-XXXX');
+    }
+    
+    return {
+      valid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
    * Limpar cache de funcionários
    */
   clearCache(): void {
@@ -417,5 +547,42 @@ export class EmployeeService {
       loading: this.loadingSubject.value,
       apiUrl: this.API_URL
     });
+  }
+
+  /**
+   * Método para ativar/desativar funcionário rapidamente
+   */
+  toggleEmployeeStatus(id: string): Observable<Employee> {
+    // Primeiro buscar o funcionário atual
+    return this.getEmployeeById(id).pipe(
+      switchMap(employee => {
+        const newStatus = employee.status === EmployeeContractStatus.ACTIVE 
+          ? EmployeeContractStatus.INACTIVE 
+          : EmployeeContractStatus.ACTIVE;
+        return this.patchEmployee(id, { status: newStatus });
+      })
+    );
+  }
+
+  /**
+   * Buscar funcionários por status
+   */
+  getEmployeesByStatus(status: EmployeeContractStatus): Observable<Employee[]> {
+    return this.getEmployees().pipe(
+      map(employees => employees.filter(emp => emp.status === status))
+    );
+  }
+
+  /**
+   * Contar funcionários por status
+   */
+  getEmployeeStats(): Observable<{active: number, inactive: number, total: number}> {
+    return this.getEmployees().pipe(
+      map(employees => ({
+        active: employees.filter(emp => emp.status === EmployeeContractStatus.ACTIVE).length,
+        inactive: employees.filter(emp => emp.status === EmployeeContractStatus.INACTIVE).length,
+        total: employees.length
+      }))
+    );
   }
 }
