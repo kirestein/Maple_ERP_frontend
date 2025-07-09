@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import { Observable, catchError, throwError, tap } from 'rxjs';
 import { Employee } from '../../shared/models/employee.model';
 
 @Injectable({
@@ -17,9 +17,22 @@ export class EmployeeService {
    * @returns Observable<Employee[]> - List of all employees.
    */
   getEmployees(): Observable<Employee[]> {
+    console.log('🔍 EmployeeService: Iniciando requisição para:', this.API_URL);
+    
     return this.http
       .get<Employee[]>(this.API_URL)
-      .pipe(catchError(this.handleError));
+      .pipe(
+        tap((data) => {
+          console.log('✅ EmployeeService: Dados recebidos com sucesso:', data);
+        }),
+        catchError((error) => {
+          console.error('❌ EmployeeService: Erro na requisição:', error);
+          console.error('❌ EmployeeService: Status:', error.status);
+          console.error('❌ EmployeeService: Message:', error.message);
+          console.error('❌ EmployeeService: URL:', error.url);
+          return this.handleError(error);
+        })
+      );
   }
 
   /**
