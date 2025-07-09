@@ -262,10 +262,12 @@ export class EmployeeFormComponent implements OnInit {
       .subscribe({
         next: (employee) => {
           this.populateForm(employee);
-          // TODO: Implementar carregamento de foto
-          // if (employee.photoUrl) {
-          //   this.selectedPhotoUrl = employee.photoUrl;
-          // }
+          // Carregar foto do funcionário se existir
+          if (employee.photoUrl) {
+            this.selectedPhotoUrl = employee.photoUrl;
+          } else if (employee.employeePhoto) {
+            this.selectedPhotoUrl = employee.employeePhoto;
+          }
         },
         error: (err) => {
           this.error = err.message || 'Erro ao carregar dados do funcionário';
