@@ -1,8 +1,8 @@
 .employee-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .employee-card {
@@ -10,28 +10,119 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-radius: 4px;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
   &:hover {
-    background-color: #f0f0f0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+    border-color: #673ab7;
+  }
+
+  .employee-info {
+    flex: 1;
+    min-width: 0;
+
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    p {
+      margin: 4px 0;
+      color: #666;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .employee-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
   }
 }
 
-.employee-info {
-  h3 {
-    margin: 0 0 8px 0;
-    font-size: 18px;
-  }
-  
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+
   p {
-    margin: 0 0 4px 0;
+    margin-top: 16px;
     color: #666;
   }
 }
 
-.employee-actions {
+.error-container {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin: 0 0 20px 0;
+    color: #666;
+  }
+}
+
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 60px 20px;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    color: #ccc;
+  }
+
+  p {
+    margin: 0 0 24px 0;
+    color: #666;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .employee-list {
+    grid-template-columns: 1fr;
+  }
+
+  .employee-card {
+    .employee-info {
+      h3 {
+        font-size: 1rem;
+      }
+
+      p {
+        font-size: 0.85rem;
+      }
+    }
+  }
 }

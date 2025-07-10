@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { EmployeeService } from '../../../../core/services/employee.service';
 import { Employee } from '../../../../shared/models/employee.model';
@@ -24,6 +25,7 @@ import { finalize } from 'rxjs';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatDialogModule,
+    MatTooltipModule,
   ],
   templateUrl: './employee-list.component.html',
   styleUrl: './employee-list.component.scss',
@@ -46,7 +48,8 @@ export class EmployeeListComponent implements OnInit {
   constructor(
     private employeeService: EmployeeService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -108,6 +111,13 @@ export class EmployeeListComponent implements OnInit {
   onPageChange(page: number): void {
     this.currentPage = page;
     this.loadEmployees();
+  }
+
+  /**
+   * Navega para a página de visualização do funcionário
+   */
+  viewEmployee(id: number): void {
+    this.router.navigate(['/employees/view', id]);
   }
 
   /**
