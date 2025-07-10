@@ -1,0 +1,353 @@
+<div class="employee-view-container">
+  <!-- Header com botão de voltar -->
+  <div class="header-actions">
+    <button mat-icon-button (click)="goBack()" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>Detalhes do Funcionário</h1>
+  </div>
+
+  <!-- Loading spinner -->
+  @if (isLoading) {
+  <div class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Carregando dados do funcionário...</p>
+  </div>
+  }
+
+  <!-- Error message -->
+  @if (error && !isLoading) {
+  <mat-card class="error-card">
+    <mat-card-content>
+      <div class="error-container">
+        <mat-icon color="warn">error</mat-icon>
+        <h2>{{ error }}</h2>
+        <p>Verifique se o ID do funcionário está correto ou tente novamente.</p>
+        <div class="error-actions">
+          <button mat-button color="primary" (click)="loadEmployee()">
+            <mat-icon>refresh</mat-icon>
+            Tentar novamente
+          </button>
+          <button mat-button (click)="goBack()">
+            <mat-icon>arrow_back</mat-icon>
+            Voltar à lista
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  }
+
+  <!-- Employee details -->
+  @if (employee && !isLoading && !error) {
+  <div class="employee-details">
+    <!-- Foto e informações principais -->
+    <mat-card class="main-info-card">
+      <mat-card-content>
+        <div class="main-info">
+          <div class="photo-section">
+            <div class="photo-container">
+              <img 
+                [src]="getPhotoUrl()" 
+                [alt]="employee.fullName + ' - Foto'"
+                (error)="onImageError($event)"
+                class="employee-photo"
+              />
+            </div>
+          </div>
+          
+          <div class="basic-info">
+            <h1 class="employee-name">{{ employee.fullName }}</h1>
+            <h2 class="employee-position">{{ employee.jobPosition || 'Cargo não informado' }}</h2>
+            
+            <div class="status-section">
+              <mat-chip 
+                [class]="getStatusChipClass()"
+                class="status-chip"
+              >
+                {{ getStatusDisplay() }}
+              </mat-chip>
+            </div>
+
+            <div class="quick-actions">
+              <button mat-raised-button color="primary" (click)="generateBadge()">
+                <mat-icon>badge</mat-icon>
+                Gerar Crachá
+              </button>
+              <button mat-raised-button color="accent" (click)="generateDocument()">
+                <mat-icon>description</mat-icon>
+                Gerar Documento Contábil
+              </button>
+              <button mat-stroked-button color="primary" (click)="editEmployee()">
+                <mat-icon>edit</mat-icon>
+                Editar
+              </button>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Informações pessoais -->
+    <mat-card class="info-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>person</mat-icon>
+          Informações Pessoais
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Data de Nascimento:</label>
+            <span>{{ formatDate(employee.birthday) }}</span>
+          </div>
+          <div class="info-item">
+            <label>CPF:</label>
+            <span>{{ formatCpf(employee.cpf) }}</span>
+          </div>
+          <div class="info-item">
+            <label>RG:</label>
+            <span>{{ employee.rg || 'N��o informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Gênero:</label>
+            <span>{{ employee.gender || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Estado Civil:</label>
+            <span>{{ employee.maritalStatus || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Naturalidade:</label>
+            <span>{{ employee.naturalness || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Nacionalidade:</label>
+            <span>{{ employee.nationality || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Escolaridade:</label>
+            <span>{{ employee.graduation || 'Não informado' }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Informações de contato -->
+    <mat-card class="info-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>contact_phone</mat-icon>
+          Contato
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>E-mail:</label>
+            <span>{{ employee.email || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Telefone:</label>
+            <span>{{ formatPhone(employee.phone) }}</span>
+          </div>
+          <div class="info-item">
+            <label>Celular:</label>
+            <span>{{ formatPhone(employee.mobile) }}</span>
+          </div>
+          <div class="info-item full-width">
+            <label>Endereço:</label>
+            <span>
+              @if (employee.employeeAddress) {
+                {{ employee.employeeAddress }}
+                @if (employee.employeeAddressNumber) {
+                  , {{ employee.employeeAddressNumber }}
+                }
+                @if (employee.employeeAddressComplement) {
+                  , {{ employee.employeeAddressComplement }}
+                }
+                @if (employee.employeeNeighborhood) {
+                  <br>{{ employee.employeeNeighborhood }}
+                }
+                @if (employee.employeeAddressCity || employee.employeeAddressState) {
+                  <br>{{ employee.employeeAddressCity }}{{ employee.employeeAddressState ? ' - ' + employee.employeeAddressState : '' }}
+                }
+                @if (employee.cep) {
+                  <br>CEP: {{ employee.cep }}
+                }
+              } @else {
+                Não informado
+              }
+            </span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Informações profissionais -->
+    <mat-card class="info-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>work</mat-icon>
+          Informações Profissionais
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Cargo/Função:</label>
+            <span>{{ employee.jobPosition || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Funções:</label>
+            <span>{{ employee.jobFunctions || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Data de Admissão:</label>
+            <span>{{ formatDate(employee.admissionDate) }}</span>
+          </div>
+          <div class="info-item">
+            <label>Período:</label>
+            <span>{{ employee.period || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Horas Diárias:</label>
+            <span>{{ employee.dailyHours || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Horas Semanais:</label>
+            <span>{{ employee.weeklyHours || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Horas Mensais:</label>
+            <span>{{ employee.monthlyHours || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Aulas Semanais:</label>
+            <span>{{ employee.weeklyClasses || 'Não informado' }}</span>
+          </div>
+          @if (employee.contractExpirationDate) {
+          <div class="info-item">
+            <label>Vencimento do Contrato:</label>
+            <span>{{ formatDate(employee.contractExpirationDate) }}</span>
+          </div>
+          }
+          @if (employee.salary) {
+          <div class="info-item">
+            <label>Salário:</label>
+            <span>R$ {{ employee.salary | number:'1.2-2' }}</span>
+          </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Documentação -->
+    @if (employee.pisPasep || employee.ctps || employee.voterTitle || employee.driversLicense) {
+    <mat-card class="info-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>description</mat-icon>
+          Documentação
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          @if (employee.pisPasep) {
+          <div class="info-item">
+            <label>PIS/PASEP:</label>
+            <span>{{ employee.pisPasep }}</span>
+          </div>
+          }
+          @if (employee.ctps) {
+          <div class="info-item">
+            <label>CTPS:</label>
+            <span>{{ employee.ctps }}{{ employee.ctpsSerie ? ' - Série: ' + employee.ctpsSerie : '' }}</span>
+          </div>
+          }
+          @if (employee.voterTitle) {
+          <div class="info-item">
+            <label>Título de Eleitor:</label>
+            <span>{{ employee.voterTitle }}</span>
+          </div>
+          }
+          @if (employee.driversLicense && employee.driversLicenseNumber) {
+          <div class="info-item">
+            <label>CNH:</label>
+            <span>{{ employee.driversLicenseNumber }} - Categoria: {{ employee.driversLicenseCategory || 'N/A' }}</span>
+          </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+    }
+
+    <!-- Informações familiares -->
+    @if (employee.fatherName || employee.motherName || employee.partnerName) {
+    <mat-card class="info-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>family_restroom</mat-icon>
+          Informações Familiares
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          @if (employee.fatherName) {
+          <div class="info-item">
+            <label>Nome do Pai:</label>
+            <span>{{ employee.fatherName }}</span>
+          </div>
+          }
+          @if (employee.motherName) {
+          <div class="info-item">
+            <label>Nome da Mãe:</label>
+            <span>{{ employee.motherName }}</span>
+          </div>
+          }
+          @if (employee.partnerName) {
+          <div class="info-item">
+            <label>Nome do Cônjuge:</label>
+            <span>{{ employee.partnerName }}</span>
+          </div>
+          }
+          @if (employee.partnerCpf) {
+          <div class="info-item">
+            <label>CPF do Cônjuge:</label>
+            <span>{{ formatCpf(employee.partnerCpf) }}</span>
+          </div>
+          }
+          @if (employee.partnerBirthday) {
+          <div class="info-item">
+            <label>Data de Nascimento do Cônjuge:</label>
+            <span>{{ formatDate(employee.partnerBirthday) }}</span>
+          </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+    }
+
+    <!-- Ações finais -->
+    <div class="final-actions">
+      <button mat-raised-button color="primary" (click)="generateBadge()">
+        <mat-icon>badge</mat-icon>
+        Gerar Crachá
+      </button>
+      <button mat-raised-button color="accent" (click)="generateDocument()">
+        <mat-icon>description</mat-icon>
+        Gerar Documento Contábil
+      </button>
+      <button mat-stroked-button color="primary" (click)="editEmployee()">
+        <mat-icon>edit</mat-icon>
+        Editar Funcionário
+      </button>
+      <button mat-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Voltar à Lista
+      </button>
+    </div>
+  </div>
+  }
+</div>
