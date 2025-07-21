@@ -156,7 +156,7 @@ export class EnvironmentService {
   private getEnvVar(key: string, defaultValue: string = ''): string {
     // Primeiro, tentar import.meta.env (Vite) com verificação segura
     try {
-      if (typeof import !== 'undefined' && import.meta && import.meta.env) {
+      if (typeof import.meta !== 'undefined' && import.meta && import.meta.env) {
         const value = import.meta.env[key];
         if (value !== undefined && value !== null && value !== '') {
           return value;
