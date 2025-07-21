@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { BaseService } from './base.service';
 import { Employee } from '../../shared/models/employee.model';
 
@@ -138,9 +138,24 @@ export class EmployeeService extends BaseService {
    * @returns Observable<Employee[]> - List of all employees.
    */
   getEmployees(): Observable<Employee[]> {
+    const fullUrl = `${this.apiUrl}${this.endpoint}`;
+    console.log('🔍 EmployeeService: Iniciando requisição para:', fullUrl);
+    console.log('🔍 EmployeeService: API URL configurada:', this.apiUrl);
+    
     return this.http
-      .get<Employee[]>(`${this.apiUrl}${this.endpoint}`)
-      .pipe(catchError(this.handleError));
+      .get<Employee[]>(fullUrl)
+      .pipe(
+        tap((data) => {
+          console.log('✅ EmployeeService: Dados recebidos com sucesso:', data);
+        }),
+        catchError((error) => {
+          console.error('❌ EmployeeService: Erro na requisição:', error);
+          console.error('❌ EmployeeService: Status:', error.status);
+          console.error('❌ EmployeeService: Message:', error.message);
+          console.error('❌ EmployeeService: URL:', error.url);
+          return this.handleError(error);
+        })
+      );
   }
 
   /**

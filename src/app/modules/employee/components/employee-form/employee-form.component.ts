@@ -273,9 +273,15 @@ export class EmployeeFormComponent implements OnInit {
           // Carregar foto do funcionário se existir
           if (employee.photoUrl) {
             this.selectedPhotoUrl = employee.photoUrl;
+
+          
+          } else if (employee.employeePhoto) {
+            this.selectedPhotoUrl = employee.employeePhoto;
+          
           }
           // Atualizar validações para modo de edição
           this.updateValidatorsForEditMode();
+
         },
         error: (err) => {
           this.error = err.message || 'Erro ao carregar dados do funcionário';
