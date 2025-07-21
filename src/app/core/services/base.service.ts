@@ -40,7 +40,7 @@ export class BaseService {
     // Mensagens específicas por status code
     switch (error.status) {
       case 0:
-        errorMessage = this.envService.config.errorMessages.network;
+        errorMessage = this.envService?.config?.errorMessages?.network || 'Erro de conexão. Verifique sua internet.';
         break;
       case 400:
         errorMessage = error.error?.message || 'Dados inválidos. Verifique os campos obrigatórios.';
@@ -52,20 +52,24 @@ export class BaseService {
         errorMessage = 'Recurso não encontrado.';
         break;
       case 409:
-        errorMessage = 'Dados duplicados. Verifique se o funcionário já existe.';
+        errorMessage = 'Dados duplicados. Verifique se o funcionário j�� existe.';
         break;
       case 500:
-        errorMessage = this.envService.config.errorMessages.server;
+        errorMessage = this.envService?.config?.errorMessages?.server || 'Erro interno do servidor. Tente novamente mais tarde.';
         break;
       case 503:
         errorMessage = 'Serviços indisponíveis. Tente novamente mais tarde.';
         break;
       default:
-        errorMessage = this.envService.config.errorMessages.default;
+        errorMessage = this.envService?.config?.errorMessages?.default || 'Ocorreu um erro inesperado. Tente novamente.';
         break;
     }
 
-    this.envService.log('Erro na API:', error);
+    if (this.envService?.log) {
+      this.envService.log('Erro na API:', error);
+    } else {
+      console.error('Erro na API:', error);
+    }
     return throwError(() => new Error(errorMessage));
   }
 }
