@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -11,8 +11,8 @@ export class BaseService {
   protected apiUrl: string;
   protected envService: EnvironmentService;
 
-  constructor(protected http: HttpClient, envService?: EnvironmentService) {
-    this.envService = envService || new EnvironmentService();
+  constructor(protected http: HttpClient) {
+    this.envService = inject(EnvironmentService);
     this.apiUrl = this.envService.apiUrl;
     
     // Debug logs temporários
