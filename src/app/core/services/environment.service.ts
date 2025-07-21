@@ -59,21 +59,32 @@ export class EnvironmentService {
     let isProduction = false;
     let detectionMethod = 'default';
     
-    // Método 1: Verificar variável de ambiente
-    try {
-      const envVar = this.getEnvVar('VITE_APP_ENVIRONMENT');
-      if (envVar === 'production') {
+    // Método 1: Verificar se é Netlify primeiro (prioridade alta)
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname.includes('netlify.app') || hostname.includes('netlify.com')) {
         isProduction = true;
-        detectionMethod = 'env-var';
-      } else if (envVar === 'development') {
-        isProduction = false;
-        detectionMethod = 'env-var';
+        detectionMethod = 'netlify-detection';
       }
-    } catch (e) {
-      console.debug('Erro ao detectar ambiente via variável:', e);
     }
     
-    // Método 2: Se não conseguiu detectar, usar hostname
+    // Método 2: Verificar variável de ambiente (se ainda não detectou)
+    if (!isProduction) {
+      try {
+        const envVar = this.getEnvVar('VITE_APP_ENVIRONMENT');
+        if (envVar === 'production') {
+          isProduction = true;
+          detectionMethod = 'env-var';
+        } else if (envVar === 'development') {
+          isProduction = false;
+          detectionMethod = 'env-var';
+        }
+      } catch (e) {
+        console.debug('Erro ao detectar ambiente via variável:', e);
+      }
+    }
+    
+    // Método 3: Se ainda não detectou, usar hostname
     if (detectionMethod === 'default' && typeof window !== 'undefined') {
       const hostname = window.location.hostname;
       isProduction = hostname !== 'localhost' && 
@@ -81,15 +92,6 @@ export class EnvironmentService {
                     hostname !== '0.0.0.0' &&
                     !hostname.includes('localhost');
       detectionMethod = 'hostname';
-    }
-    
-    // Método 3: Fallback final - verificar se é Netlify
-    if (detectionMethod === 'default' && typeof window !== 'undefined') {
-      const hostname = window.location.hostname;
-      if (hostname.includes('netlify.app') || hostname.includes('netlify.com')) {
-        isProduction = true;
-        detectionMethod = 'netlify-detection';
-      }
     }
     
     // URL da API com fallback robusto
@@ -156,7 +158,7 @@ export class EnvironmentService {
   private getEnvVar(key: string, defaultValue: string = ''): string {
     // Primeiro, tentar import.meta.env (Vite) com verificação segura
     try {
-      if (typeof import.meta !== 'undefined' && import.meta && import.meta.env) {
+      if (import.meta && import.meta.env) {
         const value = import.meta.env[key];
         if (value !== undefined && value !== null && value !== '') {
           return value;

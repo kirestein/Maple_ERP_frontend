@@ -1767,7 +1767,7 @@ export class EmployeeFormComponent implements OnInit {
     // Verificar variáveis de ambiente
     console.log('=== VARIÁVEIS DE AMBIENTE ===');
     try {
-      if (typeof import.meta !== 'undefined' && import.meta && import.meta.env) {
+      if (import.meta && import.meta.env) {
         console.log('VITE_API_URL_DEV:', import.meta.env.VITE_API_URL_DEV || 'undefined');
         console.log('VITE_API_URL_PROD:', import.meta.env.VITE_API_URL_PROD || 'undefined');
         console.log('VITE_APP_ENVIRONMENT:', import.meta.env.VITE_APP_ENVIRONMENT || 'undefined');
