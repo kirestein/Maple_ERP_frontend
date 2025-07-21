@@ -15,12 +15,17 @@ export class BaseService {
     this.envService = inject(EnvironmentService);
     this.apiUrl = this.envService.apiUrl;
     
-    // Debug logs temporários
+    // Debug logs temporários com verificação segura
     console.log('🔧 BaseService - Environment variables debug:');
-    console.log('- VITE_APP_ENVIRONMENT:', import.meta.env.VITE_APP_ENVIRONMENT);
-    console.log('- VITE_API_URL_DEV:', import.meta.env.VITE_API_URL_DEV);
-    console.log('- VITE_API_URL_PROD:', import.meta.env.VITE_API_URL_PROD);
+    try {
+      console.log('- VITE_APP_ENVIRONMENT:', import.meta?.env?.VITE_APP_ENVIRONMENT || 'undefined');
+      console.log('- VITE_API_URL_DEV:', import.meta?.env?.VITE_API_URL_DEV || 'undefined');
+      console.log('- VITE_API_URL_PROD:', import.meta?.env?.VITE_API_URL_PROD || 'undefined');
+    } catch (e) {
+      console.log('- Erro ao acessar import.meta.env:', e);
+    }
     console.log('- Final apiUrl:', this.apiUrl);
+    console.log('- Environment service config:', this.envService.config);
   }
 
   protected handleError(error: HttpErrorResponse): Observable<never> {
