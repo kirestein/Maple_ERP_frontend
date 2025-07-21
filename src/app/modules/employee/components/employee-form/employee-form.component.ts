@@ -901,6 +901,7 @@ export class EmployeeFormComponent implements OnInit {
     const professionalInfo = formValue.professionalInfo || {};
     const financialInfo = formValue.financialInfo || {};
     const benefits = formValue.benefits || {};
+    const collegeInfo = formValue.collegeInfo || {};
     const emergencyContacts = formValue.emergencyContacts || [];
     
     console.log('Valores do formulário (raw):', formValue);
@@ -935,133 +936,76 @@ export class EmployeeFormComponent implements OnInit {
       formData.append('file', this.selectedPhotoFile);
     }
     
-    // TODOS OS OUTROS CAMPOS - Informações Básicas
-    if (basicInfo.cpf) formData.append('cpf', basicInfo.cpf);
-    if (basicInfo.rg) formData.append('rg', basicInfo.rg);
+    // CAMPOS OPCIONAIS - Informa��ões Básicas
+    if (basicInfo.email && basicInfo.email.trim()) {
+      formData.append('email', basicInfo.email.trim());
+    }
+    
     if (basicInfo.birthday) {
       const birthday = new Date(basicInfo.birthday);
       formData.append('birthday', birthday.toISOString().split('T')[0]);
     }
-    if (basicInfo.birthCity) formData.append('birthCity', basicInfo.birthCity);
-    if (basicInfo.birthState) formData.append('birthState', basicInfo.birthState);
+    
     if (basicInfo.gender) formData.append('gender', basicInfo.gender);
     if (basicInfo.maritalStatus) formData.append('maritalStatus', basicInfo.maritalStatus);
-    if (basicInfo.nationality) formData.append('nationality', basicInfo.nationality);
+    if (basicInfo.nationality && basicInfo.nationality.trim()) {
+      formData.append('nationality', basicInfo.nationality.trim());
+    }
     if (basicInfo.skinColor) formData.append('skinColor', basicInfo.skinColor);
     
-    // Documentos
-    if (documents.ctps) formData.append('ctps', documents.ctps);
-    if (documents.ctpsSeries) formData.append('ctpsSeries', documents.ctpsSeries);
-    if (documents.ctpsEmissionDate) {
-      const ctpsDate = new Date(documents.ctpsEmissionDate);
-      formData.append('ctpsEmissionDate', ctpsDate.toISOString().split('T')[0]);
+    // Documentos (apenas os principais)
+    if (documents.ctps && documents.ctps.trim()) {
+      formData.append('ctps', documents.ctps.trim());
     }
-    if (documents.ctpsEmissionState) formData.append('ctpsEmissionState', documents.ctpsEmissionState);
-    if (documents.pis) formData.append('pis', documents.pis);
-    if (documents.voterTitle) formData.append('voterTitle', documents.voterTitle);
-    if (documents.voterTitleZone) formData.append('voterTitleZone', documents.voterTitleZone);
-    if (documents.voterTitleSession) formData.append('voterTitleSession', documents.voterTitleSession);
-    if (documents.militaryCertificate) formData.append('militaryCertificate', documents.militaryCertificate);
-    if (documents.driversLicense !== undefined) formData.append('driversLicense', documents.driversLicense.toString());
-    if (documents.driversLicenseNumber) formData.append('driversLicenseNumber', documents.driversLicenseNumber);
-    if (documents.driversLicenseCategory) formData.append('driversLicenseCategory', documents.driversLicenseCategory);
-    if (documents.driversLicenseEmissionDate) {
-      const licenseDate = new Date(documents.driversLicenseEmissionDate);
-      formData.append('driversLicenseEmissionDate', licenseDate.toISOString().split('T')[0]);
+    if (documents.voterTitle && documents.voterTitle.trim()) {
+      formData.append('voterTitle', documents.voterTitle.trim());
     }
-    if (documents.driversLicenseExpirationDate) {
-      const expirationDate = new Date(documents.driversLicenseExpirationDate);
-      formData.append('driversLicenseExpirationDate', expirationDate.toISOString().split('T')[0]);
+    if (documents.militaryCertificate && documents.militaryCertificate.trim()) {
+      formData.append('militaryCertificate', documents.militaryCertificate.trim());
+    }
+    if (documents.driversLicense !== undefined) {
+      formData.append('driversLicense', documents.driversLicense.toString());
     }
     
-    // Contato e Endereço
-    if (contactAddress.email) formData.append('email', contactAddress.email);
-    if (contactAddress.phone) formData.append('phone', contactAddress.phone);
-    if (contactAddress.cep) formData.append('cep', contactAddress.cep);
-    if (contactAddress.address) formData.append('address', contactAddress.address);
-    if (contactAddress.addressNumber) formData.append('addressNumber', contactAddress.addressNumber);
-    if (contactAddress.addressComplement) formData.append('addressComplement', contactAddress.addressComplement);
-    if (contactAddress.neighborhood) formData.append('neighborhood', contactAddress.neighborhood);
-    if (contactAddress.city) formData.append('city', contactAddress.city);
-    if (contactAddress.state) formData.append('state', contactAddress.state);
-    
-    // Informações Familiares
-    if (familyInfo.fatherName) formData.append('fatherName', familyInfo.fatherName);
-    if (familyInfo.motherName) formData.append('motherName', familyInfo.motherName);
-    if (familyInfo.spouseName) formData.append('spouseName', familyInfo.spouseName);
-    if (familyInfo.childrenCount !== undefined) formData.append('childrenCount', familyInfo.childrenCount.toString());
-    
-    // Dependentes
-    if (familyInfo.dependents && familyInfo.dependents.length > 0) {
-      familyInfo.dependents.forEach((dependent: any, index: number) => {
-        if (dependent.dependentName) formData.append(`dependents[${index}][dependentName]`, dependent.dependentName);
-        if (dependent.dependentCpf) formData.append(`dependents[${index}][dependentCpf]`, dependent.dependentCpf);
-        if (dependent.dependentBirthday) {
-          const depBirthday = new Date(dependent.dependentBirthday);
-          formData.append(`dependents[${index}][dependentBirthday]`, depBirthday.toISOString().split('T')[0]);
-        }
-        if (dependent.dependentRelationship) formData.append(`dependents[${index}][dependentRelationship]`, dependent.dependentRelationship);
-      });
+    // Contato e Endereço (apenas os principais)
+    if (contactAddress.phone && contactAddress.phone.trim()) {
+      formData.append('phone', contactAddress.phone.trim());
+    }
+    if (contactAddress.cep && contactAddress.cep.trim()) {
+      formData.append('cep', contactAddress.cep.trim());
     }
     
-    // Informações Profissionais
-    if (professionalInfo.jobFunctions) formData.append('jobFunctions', professionalInfo.jobFunctions);
-    if (professionalInfo.sector) formData.append('sector', professionalInfo.sector);
+    // Informações Profissionais (apenas o essencial)
+    if (professionalInfo.jobFunctions && professionalInfo.jobFunctions.trim()) {
+      formData.append('jobFunctions', professionalInfo.jobFunctions.trim());
+    }
+    
     if (professionalInfo.admissionDate) {
       const admissionDate = new Date(professionalInfo.admissionDate);
       formData.append('admissionDate', admissionDate.toISOString().split('T')[0]);
     }
-    if (professionalInfo.dismissalDate) {
-      const dismissalDate = new Date(professionalInfo.dismissalDate);
-      formData.append('dismissalDate', dismissalDate.toISOString().split('T')[0]);
+    
+    if (financialInfo.salary !== undefined && financialInfo.salary !== null) {
+      formData.append('salary', financialInfo.salary.toString());
     }
-    if (professionalInfo.workSchedule) formData.append('workSchedule', professionalInfo.workSchedule);
-    if (professionalInfo.contractType) formData.append('contractType', professionalInfo.contractType);
-    if (professionalInfo.probationaryPeriodEnd) {
-      const probationEnd = new Date(professionalInfo.probationaryPeriodEnd);
-      formData.append('probationaryPeriodEnd', probationEnd.toISOString().split('T')[0]);
-    }
-    if (professionalInfo.educationLevel) formData.append('educationLevel', professionalInfo.educationLevel);
-    if (professionalInfo.collegeName) formData.append('collegeName', professionalInfo.collegeName);
-    if (professionalInfo.courseName) formData.append('courseName', professionalInfo.courseName);
-    if (professionalInfo.ra) formData.append('ra', professionalInfo.ra);
-    if (professionalInfo.collegeCep) formData.append('collegeCep', professionalInfo.collegeCep);
-    if (professionalInfo.traineeAddress) formData.append('traineeAddress', professionalInfo.traineeAddress);
-    if (professionalInfo.traineeAddressNumber) formData.append('traineeAddressNumber', professionalInfo.traineeAddressNumber);
-    if (professionalInfo.traineeAddressNeighborhood) formData.append('traineeAddressNeighborhood', professionalInfo.traineeAddressNeighborhood);
-    if (professionalInfo.traineeAddressComplement) formData.append('traineeAddressComplement', professionalInfo.traineeAddressComplement);
-    if (professionalInfo.traineeAddressCity) formData.append('traineeAddressCity', professionalInfo.traineeAddressCity);
-    if (professionalInfo.traineeAddressState) formData.append('traineeAddressState', professionalInfo.traineeAddressState);
     
-    // Informações Financeiras
-    if (financialInfo.salary !== undefined) formData.append('salary', financialInfo.salary.toString());
-    if (financialInfo.bank) formData.append('bank', financialInfo.bank);
-    if (financialInfo.agency) formData.append('agency', financialInfo.agency);
-    if (financialInfo.account) formData.append('account', financialInfo.account);
-    if (financialInfo.accountType) formData.append('accountType', financialInfo.accountType);
-    if (financialInfo.pixKey) formData.append('pixKey', financialInfo.pixKey);
-    
-    // Benefícios
-    if (benefits.healthInsurance !== undefined) formData.append('healthInsurance', benefits.healthInsurance.toString());
-    if (benefits.healthInsuranceProvider) formData.append('healthInsuranceProvider', benefits.healthInsuranceProvider);
-    if (benefits.dentalInsurance !== undefined) formData.append('dentalInsurance', benefits.dentalInsurance.toString());
-    if (benefits.dentalInsuranceProvider) formData.append('dentalInsuranceProvider', benefits.dentalInsuranceProvider);
-    if (benefits.lifeInsurancePolicy) formData.append('lifeInsurancePolicy', benefits.lifeInsurancePolicy);
-    if (benefits.transportationVoucher !== undefined) formData.append('transportationVoucher', benefits.transportationVoucher.toString());
-    if (benefits.mealVoucher !== undefined) formData.append('mealVoucher', benefits.mealVoucher.toString());
-    
-    // Contatos de Emergência
+    // Contatos de Emergência (simplificado)
     if (emergencyContacts && emergencyContacts.length > 0) {
-      emergencyContacts.forEach((contact: any, index: number) => {
-        if (contact.contactName) formData.append(`emergencyContacts[${index}][contactName]`, contact.contactName);
-        if (contact.contactPhone) formData.append(`emergencyContacts[${index}][contactPhone]`, contact.contactPhone);
-        if (contact.contactEmail) formData.append(`emergencyContacts[${index}][contactEmail]`, contact.contactEmail);
-        if (contact.contactRelationship) formData.append(`emergencyContacts[${index}][contactRelationship]`, contact.contactRelationship);
-      });
+      const validContacts = emergencyContacts.filter((contact: any) => 
+        contact.contactName && contact.contactName.trim()
+      );
+      if (validContacts.length > 0) {
+        validContacts.forEach((contact: any, index: number) => {
+          if (contact.contactName) formData.append(`emergencyContacts[${index}][contactName]`, contact.contactName);
+          if (contact.contactPhone) formData.append(`emergencyContacts[${index}][contactPhone]`, contact.contactPhone);
+          if (contact.contactEmail) formData.append(`emergencyContacts[${index}][contactEmail]`, contact.contactEmail);
+          if (contact.contactRelationship) formData.append(`emergencyContacts[${index}][contactRelationship]`, contact.contactRelationship);
+        });
+      }
     }
     
     // Status padrão para novos funcionários
-    formData.append('status', 'active');
+    formData.append('status', 'ACTIVE');
     
     console.log('FormData preparado para envio');
     
