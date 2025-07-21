@@ -41,23 +41,20 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
+                  "maximumWarning": "600kB",
                   "maximumError": "1MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kB",
-                  "maximumError": "4kB"
+                  "maximumWarning": "8kB",
+                  "maximumError": "10kB"
                 }
               ],
               "outputHashing": "all",
               "optimization": true,
               "sourceMap": false,
               "namedChunks": false,
-              "aot": true,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",

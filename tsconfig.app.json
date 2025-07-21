@@ -9,7 +9,7 @@
       "DOM",
       "DOM.Iterable"
     ],
-    "types": []
+    "types": ["node"]
   },
   "include": [
     "src/**/*.ts"

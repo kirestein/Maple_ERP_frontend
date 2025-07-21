@@ -182,11 +182,16 @@ export class EnvTestComponent {
       return (window as any).env[key] || defaultValue;
     }
     
-    if (typeof import.meta !== 'undefined' && import.meta.env) {
-      return (import.meta.env as any)[key] || defaultValue;
+    // Verificar import.meta.env (Vite)
+    try {
+      if (import.meta && import.meta.env) {
+        return import.meta.env[key] || defaultValue;
+      }
+    } catch (e) {
+      // import.meta não disponível
     }
     
-    if (typeof process !== 'undefined' && process.env) {
+    if (typeof process !== 'undefined' && process?.env) {
       return process.env[key] || defaultValue;
     }
     

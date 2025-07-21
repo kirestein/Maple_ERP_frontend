@@ -57,11 +57,12 @@ export class EnvironmentService {
   private loadEnvironment(): AppEnvironment {
     const isProduction = this.getEnvVar('VITE_APP_ENVIRONMENT') === 'production';
     
+    // TEMPORARY FIX: Forçar uso da API de produção
+    const apiUrl = 'https://maple-erp-backend.onrender.com';
+    
     return {
       production: isProduction,
-      apiUrl: isProduction 
-        ? this.getEnvVar('VITE_API_URL_PROD', 'https://maple-erp-backend.onrender.com')
-        : this.getEnvVar('VITE_API_URL_DEV', 'http://localhost:4000'),
+      apiUrl: apiUrl,
       appName: this.getEnvVar('VITE_APP_NAME', 'Maple ERP Frontend'),
       appVersion: this.getEnvVar('VITE_APP_VERSION', '1.0.0'),
       endpoints: {
@@ -105,13 +106,22 @@ export class EnvironmentService {
   }
 
   private getEnvVar(key: string, defaultValue: string = ''): string {
-    // Para Angular com Vite, as variáveis de ambiente são acessadas via import.meta.env
+    // Primeiro, tentar import.meta.env (Vite)
+    try {
+      if (import.meta && import.meta.env) {
+        return import.meta.env[key] || defaultValue;
+      }
+    } catch (e) {
+      // import.meta não disponível
+    }
+    
+    // Fallback para window.env (para build)
     if (typeof window !== 'undefined' && (window as any).env) {
       return (window as any).env[key] || defaultValue;
     }
     
     // Fallback para process.env (se disponível)
-    if (typeof process !== 'undefined' && process.env) {
+    if (typeof process !== 'undefined' && process?.env) {
       return process.env[key] || defaultValue;
     }
     

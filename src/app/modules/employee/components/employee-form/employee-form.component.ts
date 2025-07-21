@@ -30,6 +30,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 // Serviços e Modelos
 import { EmployeeService } from '../../../../core/services/employee.service';
+import { CepService, AddressData } from '../../../../core/services/cep.service';
 import {
   Employee,
   EmployeeGender,
@@ -129,18 +130,25 @@ export class EmployeeFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private employeeService: EmployeeService,
+    private cepService: CepService,
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.initForm();
+    // Primeiro verifica se é modo de edição
     this.route.paramMap.subscribe((params) => {
       this.employeeId = params.get('id');
       if (this.employeeId) {
         this.isEditMode = true;
-        this.loadEmployeeData(this.employeeId);
+      }
+      // Inicializa o formulário após definir o modo
+      this.initForm();
+      
+      // Se for edição, carrega os dados
+      if (this.isEditMode) {
+        this.loadEmployeeData(this.employeeId!);
       }
     });
     this.setupFormListeners();
@@ -149,10 +157,10 @@ export class EmployeeFormComponent implements OnInit {
   initForm(): void {
     this.employeeForm = this.fb.group({
       basicInfo: this.fb.group({
-        fullName: ['', [Validators.required, Validators.minLength(2)]],
+        fullName: this.isEditMode ? [''] : ['', [Validators.required, Validators.minLength(2)]],
         email: ['', [Validators.email]],
-        tagName: ['', [Validators.required]],
-        tagLastName: ['', [Validators.required]],
+        tagName: this.isEditMode ? [''] : ['', [Validators.required]],
+        tagLastName: this.isEditMode ? [''] : ['', [Validators.required]],
         birthday: [null],
         gender: [null],
         maritalStatus: [EmployeeMaritalStatus.SOLTEIRO],
@@ -262,10 +270,12 @@ export class EmployeeFormComponent implements OnInit {
       .subscribe({
         next: (employee) => {
           this.populateForm(employee);
-          // TODO: Implementar carregamento de foto
-          // if (employee.photoUrl) {
-          //   this.selectedPhotoUrl = employee.photoUrl;
-          // }
+          // Carregar foto do funcionário se existir
+          if (employee.photoUrl) {
+            this.selectedPhotoUrl = employee.photoUrl;
+          }
+          // Atualizar validações para modo de edição
+          this.updateValidatorsForEditMode();
         },
         error: (err) => {
           this.error = err.message || 'Erro ao carregar dados do funcionário';
@@ -279,6 +289,32 @@ export class EmployeeFormComponent implements OnInit {
           );
         },
       });
+  }
+
+  // Atualizar validadores para modo de edição (remover campos obrigatórios)
+  private updateValidatorsForEditMode(): void {
+    if (this.isEditMode) {
+      // Remove validadores obrigatórios dos campos principais
+      const fullNameControl = this.employeeForm?.get('basicInfo.fullName');
+      const tagNameControl = this.employeeForm?.get('basicInfo.tagName');
+      const tagLastNameControl = this.employeeForm?.get('basicInfo.tagLastName');
+      
+      if (fullNameControl) {
+        fullNameControl.clearValidators();
+        fullNameControl.setValidators([Validators.minLength(2)]);
+        fullNameControl.updateValueAndValidity();
+      }
+      
+      if (tagNameControl) {
+        tagNameControl.clearValidators();
+        tagNameControl.updateValueAndValidity();
+      }
+      
+      if (tagLastNameControl) {
+        tagLastNameControl.clearValidators();
+        tagLastNameControl.updateValueAndValidity();
+      }
+    }
   }
 
   // Preencher formulário com dados do funcionário
@@ -557,11 +593,87 @@ export class EmployeeFormComponent implements OnInit {
     }
   }
 
-  // Buscar endereço pelo CEP (placeholder)
+  // Buscar endereço pelo CEP usando ViaCEP
   searchAddressByCep(cepField: string): void {
     const cep = this.employeeForm?.get(cepField)?.value;
-    if (cep && cep.length === 8) {
-      // Implementar integração com API de CEP
+    
+    if (!cep || !this.cepService.isValidCep(cep)) {
+      if (cep && cep.length > 0) {
+        this.snackBar.open('CEP inválido. Digite um CEP válido com 8 dígitos.', 'OK', {
+          duration: 3000,
+          panelClass: ['warning-snackbar']
+        });
+      }
+      return;
+    }
+
+    // Mostra loading
+    const loadingMessage = this.snackBar.open('Buscando endereço...', '', {
+      duration: 0 // Não remove automaticamente
+    });
+
+    this.cepService.searchByCep(cep).subscribe({
+      next: (addressData: AddressData) => {
+        loadingMessage.dismiss();
+        this.fillAddressFields(cepField, addressData);
+        this.snackBar.open('Endereço encontrado e preenchido automaticamente!', 'OK', {
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        });
+      },
+      error: (error) => {
+        loadingMessage.dismiss();
+        this.snackBar.open(error.message || 'Erro ao buscar CEP', 'OK', {
+          duration: 4000,
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
+  }
+
+  // Preencher campos de endereço com dados do CEP
+  private fillAddressFields(cepField: string, addressData: AddressData): void {
+    // Determina qual grupo de endereço estamos preenchendo
+    if (cepField.includes('contactAddress')) {
+      // Endereço do funcionário
+      const addressGroup = this.employeeForm?.get('contactAddress');
+      if (addressGroup) {
+        addressGroup.patchValue({
+          employeeAddress: addressData.street,
+          employeeNeighborhood: addressData.neighborhood,
+          employeeAddressCity: addressData.city,
+          employeeAddressState: addressData.state
+        });
+        
+        // Se houver complemento da API, adiciona ao campo de complemento
+        if (addressData.complement) {
+          const currentComplement = addressGroup.get('employeeAddressComplement')?.value || '';
+          const newComplement = currentComplement ? 
+            `${currentComplement}, ${addressData.complement}` : 
+            addressData.complement;
+          addressGroup.get('employeeAddressComplement')?.setValue(newComplement);
+        }
+      }
+    } else if (cepField.includes('collegeInfo')) {
+      // Endereço da faculdade
+      const collegeGroup = this.employeeForm?.get('collegeInfo');
+      if (collegeGroup) {
+        collegeGroup.patchValue({
+          traineeAddress: addressData.street,
+          traineeAddressNeighborhood: addressData.neighborhood,
+          traineeAddressCity: addressData.city,
+          traineeAddressState: addressData.state
+        });
+        
+        // Se houver complemento da API, adiciona ao campo de complemento
+        if (addressData.complement) {
+          const currentComplement = collegeGroup.get('traineeAddressComplement')?.value || '';
+          const newComplement = currentComplement ? 
+            `${currentComplement}, ${addressData.complement}` : 
+            addressData.complement;
+          collegeGroup.get('traineeAddressComplement')?.setValue(newComplement);
+        }
+      }
     }
   }
 
@@ -592,6 +704,14 @@ export class EmployeeFormComponent implements OnInit {
         // Para edição, usar JSON simples (sem foto)
         const updateData = this.prepareUpdateData();
         console.log('Dados para atualização:', updateData);
+        console.log('ID do funcionário:', this.employeeId);
+        
+        if (Object.keys(updateData).length === 0) {
+          console.warn('Nenhum dado para atualizar!');
+          this.snackBar.open('Nenhuma alteração detectada', 'OK', { duration: 3000 });
+          this.isSubmitting = false;
+          return;
+        }
         
         const operation$ = this.employeeService.updateEmployee(this.employeeId!, updateData);
         
@@ -599,6 +719,7 @@ export class EmployeeFormComponent implements OnInit {
           .pipe(finalize(() => (this.isSubmitting = false)))
           .subscribe({
             next: (employee: Employee) => {
+              console.log('Funcionário atualizado com sucesso:', employee);
               this.snackBar.open('Funcionário atualizado com sucesso!', 'OK', {
                 duration: 3000,
                 panelClass: ['success-snackbar']
@@ -606,6 +727,7 @@ export class EmployeeFormComponent implements OnInit {
               this.router.navigate(['/employees']);
             },
             error: (error: any) => {
+              console.error('Erro ao atualizar funcionário:', error);
               this.snackBar.open(
                 `Erro ao atualizar funcionário: ${error.message}`,
                 'OK',
@@ -662,27 +784,82 @@ export class EmployeeFormComponent implements OnInit {
   testMinimalSubmit(): void {
     console.log('Testando envio com dados mínimos...');
     
-    const minimalData = {
-      fullName: 'Teste Funcionário',
-      cpf: '12345678901',
-      jobPosition: EmployeeCargo.PROFESSOR,
-      admissionDate: new Date(),
-      status: EmployeeContractStatus.ACTIVE
-    };
+    // Primeiro, vamos verificar os valores atuais do formulário
+    const currentValues = this.employeeForm.value;
+    console.log('Valores atuais do formulário:', currentValues);
     
-    console.log('Dados mínimos:', minimalData);
+    // Preparar dados mínimos apenas com campos básicos
+    const minimalData: any = {};
+    
+    // Campos que sabemos que existem na API
+    if (currentValues.basicInfo?.fullName) {
+      minimalData.fullName = currentValues.basicInfo.fullName;
+    }
+    
+    if (currentValues.basicInfo?.email) {
+      minimalData.email = currentValues.basicInfo.email;
+    }
+    
+    if (currentValues.professionalInfo?.jobFunctions) {
+      minimalData.jobFunctions = currentValues.professionalInfo.jobFunctions;
+    }
+    
+    if (currentValues.professionalInfo?.status) {
+      minimalData.status = currentValues.professionalInfo.status;
+    }
+    
+    if (currentValues.contactAddress?.phone) {
+      minimalData.phone = currentValues.contactAddress.phone;
+    }
+    
+    if (currentValues.contactAddress?.mobile) {
+      minimalData.mobile = currentValues.contactAddress.mobile;
+    }
+    
+    console.log('Dados mínimos preparados:', minimalData);
+    console.log('ID do funcionário para teste:', this.employeeId);
+    
+    if (Object.keys(minimalData).length === 0) {
+      console.warn('Nenhum campo preenchido para testar!');
+      this.snackBar.open('Preencha pelo menos um campo para testar', 'OK', { duration: 3000 });
+      return;
+    }
     
     this.isSubmitting = true;
-    this.employeeService.createEmployee(minimalData as any)
+    this.employeeService.updateEmployee(this.employeeId!, minimalData)
       .pipe(finalize(() => (this.isSubmitting = false)))
       .subscribe({
         next: (result) => {
           console.log('Sucesso no teste mínimo:', result);
-          this.snackBar.open('Teste mínimo funcionou!', 'OK', { duration: 3000 });
+          this.snackBar.open('Teste mínimo funcionou! Dados atualizados.', 'OK', { 
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
         },
         error: (error) => {
           console.error('Erro no teste mínimo:', error);
-          this.snackBar.open(`Erro no teste mínimo: ${error.message}`, 'OK', { duration: 5000 });
+          this.snackBar.open(`Erro no teste mínimo: ${error.message}`, 'OK', { 
+            duration: 5000,
+            panelClass: ['error-snackbar']
+          });
+        }
+      });
+  }
+
+  // Método de teste para verificar se o funcionário existe
+  testEmployeeExists(): void {
+    console.log('Testando se funcionário existe...');
+    console.log('ID do funcionário:', this.employeeId);
+    
+    this.employeeService.getEmployeeById(this.employeeId!)
+      .subscribe({
+        next: (employee) => {
+          console.log('Funcionário encontrado:', employee);
+          this.snackBar.open('Funcionário encontrado!', 'OK', { duration: 3000 });
+        },
+        error: (error) => {
+          console.error('Erro ao buscar funcionário:', error);
+          this.snackBar.open(`Erro ao buscar funcionário: ${error.message}`, 'OK', { duration: 5000 });
         }
       });
   }
@@ -756,19 +933,34 @@ export class EmployeeFormComponent implements OnInit {
   // Preparar dados para atualização (apenas JSON, sem foto)
   prepareUpdateData(): any {
     const formValue = this.employeeForm?.value || {};
+    console.log('Valores completos do formulário:', formValue);
+    
     const basicInfo = formValue.basicInfo || {};
     const professionalInfo = formValue.professionalInfo || {};
     const contactAddress = formValue.contactAddress || {};
+    const documents = formValue.documents || {};
+    const familyInfo = formValue.familyInfo || {};
+    const financialInfo = formValue.financialInfo || {};
+    const benefits = formValue.benefits || {};
+    const collegeInfo = formValue.collegeInfo || {};
     
     const updateData: any = {};
     
-    // Campos que podem ser atualizados conforme API
+    // INFORMAÇÕES BÁSICAS
     if (basicInfo.fullName && basicInfo.fullName.trim()) {
       updateData.fullName = basicInfo.fullName.trim();
     }
     
-    if (professionalInfo.jobFunctions && professionalInfo.jobFunctions.trim()) {
-      updateData.jobFunctions = professionalInfo.jobFunctions.trim();
+    if (basicInfo.email && basicInfo.email.trim()) {
+      updateData.email = basicInfo.email.trim();
+    }
+    
+    if (basicInfo.tagName && basicInfo.tagName.trim()) {
+      updateData.tagName = basicInfo.tagName.trim();
+    }
+    
+    if (basicInfo.tagLastName && basicInfo.tagLastName.trim()) {
+      updateData.tagLastName = basicInfo.tagLastName.trim();
     }
     
     if (basicInfo.birthday) {
@@ -776,10 +968,112 @@ export class EmployeeFormComponent implements OnInit {
       updateData.birthday = birthday.toISOString().split('T')[0];
     }
     
-    if (basicInfo.email && basicInfo.email.trim()) {
-      updateData.email = basicInfo.email.trim();
+    if (basicInfo.gender) {
+      updateData.gender = basicInfo.gender;
     }
     
+    if (basicInfo.maritalStatus) {
+      updateData.maritalStatus = basicInfo.maritalStatus;
+    }
+    
+    if (basicInfo.skinColor) {
+      updateData.skinColor = basicInfo.skinColor;
+    }
+    
+    if (basicInfo.graduation) {
+      updateData.graduation = basicInfo.graduation;
+    }
+    
+    if (basicInfo.naturalness && basicInfo.naturalness.trim()) {
+      updateData.naturalness = basicInfo.naturalness.trim();
+    }
+    
+    if (basicInfo.nationality && basicInfo.nationality.trim()) {
+      updateData.nationality = basicInfo.nationality.trim();
+    }
+    
+    if (basicInfo.fatherName && basicInfo.fatherName.trim()) {
+      updateData.fatherName = basicInfo.fatherName.trim();
+    }
+    
+    if (basicInfo.motherName && basicInfo.motherName.trim()) {
+      updateData.motherName = basicInfo.motherName.trim();
+    }
+    
+    // DOCUMENTOS
+    if (documents.cpf && documents.cpf.trim()) {
+      updateData.cpf = documents.cpf.trim();
+    }
+    
+    if (documents.rg && documents.rg.trim()) {
+      updateData.rg = documents.rg.trim();
+    }
+    
+    if (documents.rgEmitter && documents.rgEmitter.trim()) {
+      updateData.rgEmitter = documents.rgEmitter.trim();
+    }
+    
+    if (documents.rgEmissionDate) {
+      const rgEmissionDate = new Date(documents.rgEmissionDate);
+      updateData.rgEmissionDate = rgEmissionDate.toISOString().split('T')[0];
+    }
+    
+    if (documents.pisPasep && documents.pisPasep.trim()) {
+      updateData.pisPasep = documents.pisPasep.trim();
+    }
+    
+    if (documents.voterTitle && documents.voterTitle.trim()) {
+      updateData.voterTitle = documents.voterTitle.trim();
+    }
+    
+    if (documents.voterZone && documents.voterZone.trim()) {
+      updateData.voterZone = documents.voterZone.trim();
+    }
+    
+    if (documents.voterSection && documents.voterSection.trim()) {
+      updateData.voterSection = documents.voterSection.trim();
+    }
+    
+    if (documents.voterEmission) {
+      const voterEmission = new Date(documents.voterEmission);
+      updateData.voterEmission = voterEmission.toISOString().split('T')[0];
+    }
+    
+    if (documents.militaryCertificate && documents.militaryCertificate.trim()) {
+      updateData.militaryCertificate = documents.militaryCertificate.trim();
+    }
+    
+    if (documents.ctps && documents.ctps.trim()) {
+      updateData.ctps = documents.ctps.trim();
+    }
+    
+    if (documents.ctpsSerie && documents.ctpsSerie.trim()) {
+      updateData.ctpsSerie = documents.ctpsSerie.trim();
+    }
+    
+    if (documents.driversLicense !== undefined) {
+      updateData.driversLicense = documents.driversLicense;
+    }
+    
+    if (documents.driversLicenseNumber && documents.driversLicenseNumber.trim()) {
+      updateData.driversLicenseNumber = documents.driversLicenseNumber.trim();
+    }
+    
+    if (documents.driversLicenseCategory) {
+      updateData.driversLicenseCategory = documents.driversLicenseCategory;
+    }
+    
+    if (documents.driversLicenseEmissionDate) {
+      const driversLicenseEmissionDate = new Date(documents.driversLicenseEmissionDate);
+      updateData.driversLicenseEmissionDate = driversLicenseEmissionDate.toISOString().split('T')[0];
+    }
+    
+    if (documents.driversLicenseExpirationDate) {
+      const driversLicenseExpirationDate = new Date(documents.driversLicenseExpirationDate);
+      updateData.driversLicenseExpirationDate = driversLicenseExpirationDate.toISOString().split('T')[0];
+    }
+    
+    // CONTATO E ENDEREÇO
     if (contactAddress.phone && contactAddress.phone.trim()) {
       updateData.phone = contactAddress.phone.trim();
     }
@@ -788,9 +1082,220 @@ export class EmployeeFormComponent implements OnInit {
       updateData.mobile = contactAddress.mobile.trim();
     }
     
+    if (contactAddress.cep && contactAddress.cep.trim()) {
+      updateData.cep = contactAddress.cep.trim();
+    }
+    
+    if (contactAddress.employeeAddress && contactAddress.employeeAddress.trim()) {
+      updateData.employeeAddress = contactAddress.employeeAddress.trim();
+    }
+    
+    if (contactAddress.employeeAddressNumber && contactAddress.employeeAddressNumber.trim()) {
+      updateData.employeeAddressNumber = contactAddress.employeeAddressNumber.trim();
+    }
+    
+    if (contactAddress.employeeAddressComplement && contactAddress.employeeAddressComplement.trim()) {
+      updateData.employeeAddressComplement = contactAddress.employeeAddressComplement.trim();
+    }
+    
+    if (contactAddress.employeeNeighborhood && contactAddress.employeeNeighborhood.trim()) {
+      updateData.employeeNeighborhood = contactAddress.employeeNeighborhood.trim();
+    }
+    
+    if (contactAddress.employeeAddressCity && contactAddress.employeeAddressCity.trim()) {
+      updateData.employeeAddressCity = contactAddress.employeeAddressCity.trim();
+    }
+    
+    if (contactAddress.employeeAddressState && contactAddress.employeeAddressState.trim()) {
+      updateData.employeeAddressState = contactAddress.employeeAddressState.trim();
+    }
+    
+    // INFORMAÇÕES FAMILIARES
+    if (familyInfo.partnerName && familyInfo.partnerName.trim()) {
+      updateData.partnerName = familyInfo.partnerName.trim();
+    }
+    
+    if (familyInfo.partnerCpf && familyInfo.partnerCpf.trim()) {
+      updateData.partnerCpf = familyInfo.partnerCpf.trim();
+    }
+    
+    if (familyInfo.partnerBirthday) {
+      const partnerBirthday = new Date(familyInfo.partnerBirthday);
+      updateData.partnerBirthday = partnerBirthday.toISOString().split('T')[0];
+    }
+    
+    if (familyInfo.partnerRg && familyInfo.partnerRg.trim()) {
+      updateData.partnerRg = familyInfo.partnerRg.trim();
+    }
+    
+    // INFORMAÇÕES PROFISSIONAIS
+    if (professionalInfo.jobPosition) {
+      updateData.jobPosition = professionalInfo.jobPosition;
+    }
+    
+    if (professionalInfo.jobFunctions && professionalInfo.jobFunctions.trim()) {
+      updateData.jobFunctions = professionalInfo.jobFunctions.trim();
+    }
+    
+    if (professionalInfo.admissionDate) {
+      const admissionDate = new Date(professionalInfo.admissionDate);
+      updateData.admissionDate = admissionDate.toISOString().split('T')[0];
+    }
+    
+    if (professionalInfo.period && professionalInfo.period.trim()) {
+      updateData.period = professionalInfo.period.trim();
+    }
+    
+    if (professionalInfo.contractExpirationDate) {
+      const contractExpirationDate = new Date(professionalInfo.contractExpirationDate);
+      updateData.contractExpirationDate = contractExpirationDate.toISOString().split('T')[0];
+    }
+    
+    if (professionalInfo.dailyHours && professionalInfo.dailyHours.trim()) {
+      updateData.dailyHours = professionalInfo.dailyHours.trim();
+    }
+    
+    if (professionalInfo.weeklyHours && professionalInfo.weeklyHours.trim()) {
+      updateData.weeklyHours = professionalInfo.weeklyHours.trim();
+    }
+    
+    if (professionalInfo.monthlyHours && professionalInfo.monthlyHours.trim()) {
+      updateData.monthlyHours = professionalInfo.monthlyHours.trim();
+    }
+    
+    if (professionalInfo.weeklyClasses && professionalInfo.weeklyClasses.trim()) {
+      updateData.weeklyClasses = professionalInfo.weeklyClasses.trim();
+    }
+    
+    if (professionalInfo.hasAccumulate !== undefined) {
+      updateData.hasAccumulate = professionalInfo.hasAccumulate;
+    }
+    
+    if (professionalInfo.hasAccumulateCompany && professionalInfo.hasAccumulateCompany.trim()) {
+      updateData.hasAccumulateCompany = professionalInfo.hasAccumulateCompany.trim();
+    }
+    
     if (professionalInfo.status) {
       updateData.status = professionalInfo.status;
     }
+    
+    // INFORMAÇÕES FINANCEIRAS
+    if (financialInfo.salary !== undefined && financialInfo.salary !== null) {
+      updateData.salary = financialInfo.salary;
+    }
+    
+    if (financialInfo.salaryBank && financialInfo.salaryBank.trim()) {
+      updateData.salaryBank = financialInfo.salaryBank.trim();
+    }
+    
+    if (financialInfo.salaryAgency && financialInfo.salaryAgency.trim()) {
+      updateData.salaryAgency = financialInfo.salaryAgency.trim();
+    }
+    
+    if (financialInfo.salaryAccount && financialInfo.salaryAccount.trim()) {
+      updateData.salaryAccount = financialInfo.salaryAccount.trim();
+    }
+    
+    if (financialInfo.salaryAccountType && financialInfo.salaryAccountType.trim()) {
+      updateData.salaryAccountType = financialInfo.salaryAccountType.trim();
+    }
+    
+    if (financialInfo.familySalary !== undefined && financialInfo.familySalary !== null) {
+      updateData.familySalary = financialInfo.familySalary;
+    }
+    
+    if (financialInfo.parenting && financialInfo.parenting.trim()) {
+      updateData.parenting = financialInfo.parenting.trim();
+    }
+    
+    if (financialInfo.irpf && financialInfo.irpf.trim()) {
+      updateData.IRPF = financialInfo.irpf.trim();
+    }
+    
+    // BENEFÍCIOS
+    if (benefits.mealValue !== undefined && benefits.mealValue !== null) {
+      updateData.mealValue = benefits.mealValue;
+    }
+    
+    if (benefits.transport !== undefined) {
+      updateData.transport = benefits.transport;
+    }
+    
+    if (benefits.transportType && benefits.transportType.trim()) {
+      updateData.trasportType = benefits.transportType.trim(); // Note: API usa 'trasportType' (com 1 's')
+    }
+    
+    if (benefits.transportValue !== undefined && benefits.transportValue !== null) {
+      updateData.transportValue = benefits.transportValue;
+    }
+    
+    if (benefits.healthPlan && benefits.healthPlan.trim()) {
+      updateData.healthPlan = benefits.healthPlan.trim();
+    }
+    
+    if (benefits.healthCardNumber && benefits.healthCardNumber.trim()) {
+      updateData.healthCardNumber = benefits.healthCardNumber.trim();
+    }
+    
+    if (benefits.deficiency !== undefined) {
+      updateData.deficiency = benefits.deficiency;
+    }
+    
+    if (benefits.deficiencyDescription && benefits.deficiencyDescription.trim()) {
+      updateData.deficiencyDescription = benefits.deficiencyDescription.trim();
+    }
+    
+    // INFORMAÇÕES UNIVERSITÁRIAS
+    if (collegeInfo.college && collegeInfo.college.trim()) {
+      updateData.college = collegeInfo.college.trim();
+    }
+    
+    if (collegeInfo.course && collegeInfo.course.trim()) {
+      updateData.course = collegeInfo.course.trim();
+    }
+    
+    if (collegeInfo.trainingPeriod && collegeInfo.trainingPeriod.trim()) {
+      updateData.trainingPeriod = collegeInfo.trainingPeriod.trim();
+    }
+    
+    if (collegeInfo.ra && collegeInfo.ra.trim()) {
+      updateData.ra = collegeInfo.ra.trim();
+    }
+    
+    if (collegeInfo.collegeCep && collegeInfo.collegeCep.trim()) {
+      updateData.collegeCep = collegeInfo.collegeCep.trim();
+    }
+    
+    if (collegeInfo.traineeAddress && collegeInfo.traineeAddress.trim()) {
+      updateData.traineeAddress = collegeInfo.traineeAddress.trim();
+    }
+    
+    if (collegeInfo.traineeAddressNumber !== undefined && collegeInfo.traineeAddressNumber !== null) {
+      updateData.traineeAddressNumber = collegeInfo.traineeAddressNumber;
+    }
+    
+    if (collegeInfo.traineeAddressNeighborhood && collegeInfo.traineeAddressNeighborhood.trim()) {
+      updateData.traineeAddressNeighborhood = collegeInfo.traineeAddressNeighborhood.trim();
+    }
+    
+    if (collegeInfo.traineeAddressComplement && collegeInfo.traineeAddressComplement.trim()) {
+      updateData.traineeAddressComplement = collegeInfo.traineeAddressComplement.trim();
+    }
+    
+    if (collegeInfo.traineeAddressCity && collegeInfo.traineeAddressCity.trim()) {
+      updateData.traineeAddressCity = collegeInfo.traineeAddressCity.trim();
+    }
+    
+    if (collegeInfo.traineeAddressState && collegeInfo.traineeAddressState.trim()) {
+      updateData.traineeAddressState = collegeInfo.traineeAddressState.trim();
+    }
+    
+    if (collegeInfo.lifeInsurancePolicy && collegeInfo.lifeInsurancePolicy.trim()) {
+      updateData.lifInsurancePolicy = collegeInfo.lifeInsurancePolicy.trim();
+    }
+    
+    console.log('Dados preparados para atualização:', updateData);
+    console.log('Quantidade de campos para atualizar:', Object.keys(updateData).length);
     
     return updateData;
   }
@@ -1042,36 +1547,42 @@ export class EmployeeFormComponent implements OnInit {
     
     const summary = [];
     
-    // Validar foto obrigatória
-    summary.push({
-      valid: !!(this.selectedPhotoFile || this.selectedPhotoUrl),
-      message: 'Foto é obrigatória',
-      stepIndex: 0
-    });
+    // Para novos funcionários, validações mais rigorosas
+    if (!this.isEditMode) {
+      // Validar foto obrigatória
+      summary.push({
+        valid: !!(this.selectedPhotoFile || this.selectedPhotoUrl),
+        message: 'Foto é obrigatória para novos funcionários',
+        stepIndex: 0
+      });
+      
+      // Validar informações básicas obrigatórias
+      const basicInfo = this.employeeForm.get('basicInfo');
+      const fullName = basicInfo?.get('fullName')?.value;
+      summary.push({
+        valid: !!(fullName && fullName.trim().length >= 2),
+        message: 'Nome completo é obrigatório (mínimo 2 caracteres)',
+        stepIndex: 0
+      });
+
+      const tagName = basicInfo?.get('tagName')?.value;
+      summary.push({
+        valid: !!(tagName && tagName.trim()),
+        message: 'Nome para crachá é obrigatório',
+        stepIndex: 0
+      });
+
+      const tagLastName = basicInfo?.get('tagLastName')?.value;
+      summary.push({
+        valid: !!(tagLastName && tagLastName.trim()),
+        message: 'Sobrenome para crachá é obrigatório',
+        stepIndex: 0
+      });
+    }
     
-    // Validar informações básicas obrigatórias
+    // Validações comuns (para criação e edição)
     const basicInfo = this.employeeForm.get('basicInfo');
-    const fullName = basicInfo?.get('fullName')?.value;
-    summary.push({
-      valid: !!(fullName && fullName.trim().length >= 2),
-      message: 'Nome completo é obrigatório (mínimo 2 caracteres)',
-      stepIndex: 0
-    });
-
-    const tagName = basicInfo?.get('tagName')?.value;
-    summary.push({
-      valid: !!(tagName && tagName.trim()),
-      message: 'Nome para crachá é obrigatório',
-      stepIndex: 0
-    });
-
-    const tagLastName = basicInfo?.get('tagLastName')?.value;
-    summary.push({
-      valid: !!(tagLastName && tagLastName.trim()),
-      message: 'Sobrenome para crachá é obrigatório',
-      stepIndex: 0
-    });
-
+    
     // Validar email se fornecido
     const email = basicInfo?.get('email')?.value;
     if (email && email.trim()) {
@@ -1081,6 +1592,18 @@ export class EmployeeFormComponent implements OnInit {
         message: 'E-mail deve ter um formato válido',
         stepIndex: 0
       });
+    }
+    
+    // Para edição, validar apenas se campos estão preenchidos corretamente
+    if (this.isEditMode) {
+      const fullName = basicInfo?.get('fullName')?.value;
+      if (fullName && fullName.trim() && fullName.trim().length < 2) {
+        summary.push({
+          valid: false,
+          message: 'Nome completo deve ter pelo menos 2 caracteres',
+          stepIndex: 0
+        });
+      }
     }
 
     return summary;
@@ -1130,29 +1653,125 @@ export class EmployeeFormComponent implements OnInit {
   validateRequiredFields(): string[] {
     const errors: string[] = [];
     
-    // Validar foto obrigatória
-    if (!this.selectedPhotoFile && !this.selectedPhotoUrl) {
-      errors.push('Foto é obrigatória');
+    // Para novos funcionários, validações mais rigorosas
+    if (!this.isEditMode) {
+      // Validar foto obrigatória apenas para novos funcionários
+      if (!this.selectedPhotoFile && !this.selectedPhotoUrl) {
+        errors.push('Foto é obrigatória para novos funcionários');
+      }
+      
+      // Validar nome completo
+      const fullName = this.employeeForm?.get('basicInfo.fullName')?.value;
+      if (!fullName || !fullName.trim()) {
+        errors.push('Nome completo é obrigatório');
+      }
+      
+      // Validar nome para crachá
+      const tagName = this.employeeForm?.get('basicInfo.tagName')?.value;
+      if (!tagName || !tagName.trim()) {
+        errors.push('Nome para crachá é obrigatório');
+      }
+      
+      // Validar sobrenome para crachá
+      const tagLastName = this.employeeForm?.get('basicInfo.tagLastName')?.value;
+      if (!tagLastName || !tagLastName.trim()) {
+        errors.push('Sobrenome para crachá é obrigatório');
+      }
     }
-    
-    // Validar nome completo
-    const fullName = this.employeeForm?.get('basicInfo.fullName')?.value;
-    if (!fullName || !fullName.trim()) {
-      errors.push('Nome completo é obrigatório');
-    }
-    
-    // Validar nome para crachá
-    const tagName = this.employeeForm?.get('basicInfo.tagName')?.value;
-    if (!tagName || !tagName.trim()) {
-      errors.push('Nome para crachá é obrigatório');
-    }
-    
-    // Validar sobrenome para crachá
-    const tagLastName = this.employeeForm?.get('basicInfo.tagLastName')?.value;
-    if (!tagLastName || !tagLastName.trim()) {
-      errors.push('Sobrenome para crachá é obrigatório');
+    // Para edição, validações mais flexíveis (apenas se campos estiverem preenchidos)
+    else {
+      // Validar nome completo se preenchido
+      const fullName = this.employeeForm?.get('basicInfo.fullName')?.value;
+      if (fullName && fullName.trim() && fullName.trim().length < 2) {
+        errors.push('Nome completo deve ter pelo menos 2 caracteres');
+      }
+      
+      // Validar email se preenchido
+      const email = this.employeeForm?.get('basicInfo.email')?.value;
+      if (email && email.trim()) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          errors.push('E-mail deve ter um formato válido');
+        }
+      }
     }
     
     return errors;
+  }
+
+  // Método de teste com dados fixos (independente do formulário)
+  testFixedDataSubmit(): void {
+    console.log('Testando envio com dados fixos...');
+    
+    // Dados fixos para testar se a API está funcionando
+    const fixedData = {
+      fullName: 'Teste Atualização',
+      email: 'teste.atualizacao@teste.com',
+      jobFunctions: 'Função de teste atualizada',
+      phone: '(11) 99999-9999',
+      status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE' // Usando o formato correto para o status
+    };
+    
+    console.log('Dados fixos para teste:', fixedData);
+    console.log('ID do funcionário para teste:', this.employeeId);
+    console.log('URL completa da requisição:', `${this.employeeService['apiUrl']}${this.employeeService['endpoint']}/${this.employeeId}`);
+    
+    this.isSubmitting = true;
+    this.employeeService.updateEmployee(this.employeeId!, fixedData)
+      .pipe(finalize(() => (this.isSubmitting = false)))
+      .subscribe({
+        next: (result) => {
+          console.log('Sucesso no teste com dados fixos:', result);
+          this.snackBar.open('Teste com dados fixos funcionou! API está OK.', 'OK', { 
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
+          // Recarregar dados para verificar se realmente foi atualizado
+          this.loadEmployeeData(this.employeeId!);
+        },
+        error: (error) => {
+          console.error('Erro no teste com dados fixos:', error);
+          console.error('Detalhes do erro:', {
+            status: error.status,
+            statusText: error.statusText,
+            message: error.message,
+            error: error.error
+          });
+          this.snackBar.open(`Erro no teste fixo: ${error.message}`, 'OK', { 
+            duration: 5000,
+            panelClass: ['error-snackbar']
+          });
+        }
+      });
+  }
+
+  // Método para verificar configuração da API
+  testApiConfiguration(): void {
+    console.log('=== CONFIGURAÇÃO DA API ===');
+    console.log('URL da API:', this.employeeService['apiUrl']);
+    console.log('Endpoint employees:', this.employeeService['endpoint']);
+    console.log('URL completa:', `${this.employeeService['apiUrl']}${this.employeeService['endpoint']}`);
+    console.log('Environment:', {
+      production: window.location.hostname !== 'localhost',
+      hostname: window.location.hostname,
+      protocol: window.location.protocol,
+      port: window.location.port
+    });
+    
+    // Verificar variáveis de ambiente
+    console.log('=== VARIÁVEIS DE AMBIENTE ===');
+    try {
+      if (import.meta && import.meta.env) {
+        console.log('VITE_API_URL_DEV:', import.meta.env.VITE_API_URL_DEV);
+        console.log('VITE_API_URL_PROD:', import.meta.env.VITE_API_URL_PROD);
+        console.log('VITE_APP_ENVIRONMENT:', import.meta.env.VITE_APP_ENVIRONMENT);
+      } else {
+        console.log('import.meta.env não disponível');
+      }
+    } catch (e) {
+      console.log('Erro ao acessar import.meta.env:', e);
+    }
+    
+    this.snackBar.open('Configuração da API logada no console', 'OK', { duration: 3000 });
   }
 }
