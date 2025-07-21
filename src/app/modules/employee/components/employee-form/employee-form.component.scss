@@ -108,6 +108,18 @@
   margin-top: 8px;
 }
 
+.photo-info {
+  color: #666;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 8px;
+  font-style: italic;
+
+  small {
+    color: #888;
+  }
+}
+
 // Estados de campos conforme especificações
 .mat-form-field {
   &.mat-focused {

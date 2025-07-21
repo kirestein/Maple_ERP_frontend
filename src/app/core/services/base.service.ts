@@ -14,6 +14,13 @@ export class BaseService {
   constructor(protected http: HttpClient, envService?: EnvironmentService) {
     this.envService = envService || new EnvironmentService();
     this.apiUrl = this.envService.apiUrl;
+    
+    // Debug logs temporários
+    console.log('🔧 BaseService - Environment variables debug:');
+    console.log('- VITE_APP_ENVIRONMENT:', import.meta.env.VITE_APP_ENVIRONMENT);
+    console.log('- VITE_API_URL_DEV:', import.meta.env.VITE_API_URL_DEV);
+    console.log('- VITE_API_URL_PROD:', import.meta.env.VITE_API_URL_PROD);
+    console.log('- Final apiUrl:', this.apiUrl);
   }
 
   protected handleError(error: HttpErrorResponse): Observable<never> {

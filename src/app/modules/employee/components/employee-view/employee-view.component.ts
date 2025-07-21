@@ -78,8 +78,9 @@ export class EmployeeViewComponent implements OnInit {
           } else {
             this.error = err.message || 'Erro ao carregar dados do funcionário';
           }
+          const errorMessage = this.error || 'Erro desconhecido';
           this.snackBar.open(
-            this.error,
+            errorMessage,
             'Fechar',
             {
               duration: 5000,

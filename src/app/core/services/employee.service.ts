@@ -23,13 +23,104 @@ export interface CreateEmployeeRequest {
 }
 
 export interface UpdateEmployeeRequest {
+  // Informações básicas
   fullName?: string;
-  jobFunctions?: string;
-  birthday?: string;
   email?: string;
+  tagName?: string;
+  tagLastName?: string;
+  birthday?: string;
+  gender?: string;
+  maritalStatus?: string;
+  skinColor?: string;
+  graduation?: string;
+  naturalness?: string;
+  nationality?: string;
+  fatherName?: string;
+  motherName?: string;
+  
+  // Documentos
+  cpf?: string;
+  rg?: string;
+  rgEmitter?: string;
+  rgEmissionDate?: string;
+  pisPasep?: string;
+  voterTitle?: string;
+  voterZone?: string;
+  voterSection?: string;
+  voterEmission?: string;
+  militaryCertificate?: string;
+  ctps?: string;
+  ctpsSerie?: string;
+  driversLicense?: boolean;
+  driversLicenseNumber?: string;
+  driversLicenseCategory?: string;
+  driversLicenseEmissionDate?: string;
+  driversLicenseExpirationDate?: string;
+  
+  // Contato e endereço
   phone?: string;
   mobile?: string;
-  status?: 'Ativo' | 'Inativo' | 'Licença';
+  cep?: string;
+  employeeAddress?: string;
+  employeeAddressNumber?: string;
+  employeeAddressComplement?: string;
+  employeeNeighborhood?: string;
+  employeeAddressCity?: string;
+  employeeAddressState?: string;
+  
+  // Informações familiares
+  partnerName?: string;
+  partnerCpf?: string;
+  partnerBirthday?: string;
+  partnerRg?: string;
+  
+  // Informações profissionais
+  jobPosition?: string;
+  jobFunctions?: string;
+  admissionDate?: string;
+  period?: string;
+  contractExpirationDate?: string;
+  dailyHours?: string;
+  weeklyHours?: string;
+  monthlyHours?: string;
+  weeklyClasses?: string;
+  hasAccumulate?: boolean;
+  hasAccumulateCompany?: string;
+  status?: 'ACTIVE' | 'INACTIVE';
+  
+  // Informações financeiras
+  salary?: number;
+  salaryBank?: string;
+  salaryAgency?: string;
+  salaryAccount?: string;
+  salaryAccountType?: string;
+  familySalary?: number;
+  parenting?: string;
+  IRPF?: string;
+  
+  // Benefícios
+  mealValue?: number;
+  transport?: boolean;
+  trasportType?: string; // Note: API usa 'trasportType' (com 1 's')
+  transportValue?: number;
+  healthPlan?: string;
+  healthCardNumber?: string;
+  deficiency?: boolean;
+  deficiencyDescription?: string;
+  
+  // Informações universitárias
+  college?: string;
+  course?: string;
+  trainingPeriod?: string;
+  ra?: string;
+  collegeCep?: string;
+  traineeAddress?: string;
+  traineeAddressNumber?: number;
+  traineeAddressNeighborhood?: string;
+  traineeAddressComplement?: string;
+  traineeAddressCity?: string;
+  traineeAddressState?: string;
+  lifInsurancePolicy?: string;
 }
 
 @Injectable({
@@ -106,9 +197,23 @@ export class EmployeeService extends BaseService {
     id: string | number,
     employeeData: UpdateEmployeeRequest
   ): Observable<Employee> {
+    console.log('EmployeeService.updateEmployee chamado com:');
+    console.log('ID:', id);
+    console.log('Dados:', employeeData);
+    console.log('URL da requisição:', `${this.apiUrl}${this.endpoint}/${id}`);
+    
     return this.http
       .put<Employee>(`${this.apiUrl}${this.endpoint}/${id}`, employeeData)
-      .pipe(catchError(this.handleError));
+      .pipe(
+        map((response: Employee) => {
+          console.log('Resposta do servidor (updateEmployee):', response);
+          return response;
+        }),
+        catchError((error) => {
+          console.error('Erro no updateEmployee:', error);
+          return this.handleError(error);
+        })
+      );
   }
 
   /**
