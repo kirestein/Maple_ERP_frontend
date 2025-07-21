@@ -55,27 +55,59 @@ export class EnvironmentService {
   }
 
   private loadEnvironment(): AppEnvironment {
-    // Detectar produção com fallback seguro
+    // Detectar produção com múltiplos fallbacks seguros
     let isProduction = false;
-    try {
-      const envVar = this.getEnvVar('VITE_APP_ENVIRONMENT');
-      isProduction = envVar === 'production';
-    } catch (e) {
-      // Se não conseguir detectar, usar hostname como fallback
-      isProduction = typeof window !== 'undefined' && 
-                    window.location.hostname !== 'localhost' && 
-                    window.location.hostname !== '127.0.0.1';
+    let detectionMethod = 'default';
+    
+    // Método 1: Verificar se é Netlify primeiro (prioridade alta)
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname.includes('netlify.app') || hostname.includes('netlify.com')) {
+        isProduction = true;
+        detectionMethod = 'netlify-detection';
+      }
     }
     
-    // URL da API com fallback para produção
-    const apiUrl = isProduction 
-      ? 'https://maple-erp-backend.onrender.com'
-      : this.getEnvVar('VITE_API_URL_DEV', 'http://localhost:4000');
+    // Método 2: Verificar variável de ambiente (se ainda não detectou)
+    if (!isProduction) {
+      try {
+        const envVar = this.getEnvVar('VITE_APP_ENVIRONMENT');
+        if (envVar === 'production') {
+          isProduction = true;
+          detectionMethod = 'env-var';
+        } else if (envVar === 'development') {
+          isProduction = false;
+          detectionMethod = 'env-var';
+        }
+      } catch (e) {
+        console.debug('Erro ao detectar ambiente via variável:', e);
+      }
+    }
+    
+    // Método 3: Se ainda não detectou, usar hostname
+    if (detectionMethod === 'default' && typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      isProduction = hostname !== 'localhost' && 
+                    hostname !== '127.0.0.1' && 
+                    hostname !== '0.0.0.0' &&
+                    !hostname.includes('localhost');
+      detectionMethod = 'hostname';
+    }
+    
+    // URL da API com fallback robusto
+    let apiUrl: string;
+    if (isProduction) {
+      apiUrl = this.getEnvVar('VITE_API_URL_PROD', 'https://maple-erp-backend.onrender.com');
+    } else {
+      apiUrl = this.getEnvVar('VITE_API_URL_DEV', 'http://localhost:4000');
+    }
     
     console.log('🔧 Environment detected:', {
       isProduction,
       apiUrl,
-      hostname: typeof window !== 'undefined' ? window.location.hostname : 'unknown'
+      detectionMethod,
+      hostname: typeof window !== 'undefined' ? window.location.hostname : 'unknown',
+      envVar: this.getEnvVar('VITE_APP_ENVIRONMENT', 'not-set')
     });
     
     return {
@@ -126,8 +158,11 @@ export class EnvironmentService {
   private getEnvVar(key: string, defaultValue: string = ''): string {
     // Primeiro, tentar import.meta.env (Vite) com verificação segura
     try {
-      if (import.meta && import.meta.env && import.meta.env[key]) {
-        return import.meta.env[key];
+      if (import.meta && import.meta.env) {
+        const value = import.meta.env[key];
+        if (value !== undefined && value !== null && value !== '') {
+          return value;
+        }
       }
     } catch (e) {
       // import.meta não disponível ou erro

@@ -1768,9 +1768,9 @@ export class EmployeeFormComponent implements OnInit {
     console.log('=== VARIÁVEIS DE AMBIENTE ===');
     try {
       if (import.meta && import.meta.env) {
-        console.log('VITE_API_URL_DEV:', import.meta.env.VITE_API_URL_DEV);
-        console.log('VITE_API_URL_PROD:', import.meta.env.VITE_API_URL_PROD);
-        console.log('VITE_APP_ENVIRONMENT:', import.meta.env.VITE_APP_ENVIRONMENT);
+        console.log('VITE_API_URL_DEV:', import.meta.env.VITE_API_URL_DEV || 'undefined');
+        console.log('VITE_API_URL_PROD:', import.meta.env.VITE_API_URL_PROD || 'undefined');
+        console.log('VITE_APP_ENVIRONMENT:', import.meta.env.VITE_APP_ENVIRONMENT || 'undefined');
       } else {
         console.log('import.meta.env não disponível');
       }
