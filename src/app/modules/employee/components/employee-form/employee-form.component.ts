@@ -69,7 +69,6 @@ import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
     MatProgressSpinnerModule,
     NgxMaskDirective,
   ],
-  providers: [provideNgxMask()],
   templateUrl: './employee-form.component.html',
   styleUrls: ['./employee-form.component.scss'],
 })
