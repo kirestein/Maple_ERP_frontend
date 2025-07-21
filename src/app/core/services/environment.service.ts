@@ -55,10 +55,28 @@ export class EnvironmentService {
   }
 
   private loadEnvironment(): AppEnvironment {
-    const isProduction = this.getEnvVar('VITE_APP_ENVIRONMENT') === 'production';
+    // Detectar produção com fallback seguro
+    let isProduction = false;
+    try {
+      const envVar = this.getEnvVar('VITE_APP_ENVIRONMENT');
+      isProduction = envVar === 'production';
+    } catch (e) {
+      // Se não conseguir detectar, usar hostname como fallback
+      isProduction = typeof window !== 'undefined' && 
+                    window.location.hostname !== 'localhost' && 
+                    window.location.hostname !== '127.0.0.1';
+    }
     
-    // TEMPORARY FIX: Forçar uso da API de produção
-    const apiUrl = 'https://maple-erp-backend.onrender.com';
+    // URL da API com fallback para produção
+    const apiUrl = isProduction 
+      ? 'https://maple-erp-backend.onrender.com'
+      : this.getEnvVar('VITE_API_URL_DEV', 'http://localhost:4000');
+    
+    console.log('🔧 Environment detected:', {
+      isProduction,
+      apiUrl,
+      hostname: typeof window !== 'undefined' ? window.location.hostname : 'unknown'
+    });
     
     return {
       production: isProduction,
@@ -106,25 +124,37 @@ export class EnvironmentService {
   }
 
   private getEnvVar(key: string, defaultValue: string = ''): string {
-    // Primeiro, tentar import.meta.env (Vite)
+    // Primeiro, tentar import.meta.env (Vite) com verificação segura
     try {
-      if (import.meta && import.meta.env) {
-        return import.meta.env[key] || defaultValue;
+      if (import.meta && import.meta.env && import.meta.env[key]) {
+        return import.meta.env[key];
       }
     } catch (e) {
-      // import.meta não disponível
+      // import.meta não disponível ou erro
+      console.debug('import.meta.env não disponível:', e);
     }
     
     // Fallback para window.env (para build)
-    if (typeof window !== 'undefined' && (window as any).env) {
-      return (window as any).env[key] || defaultValue;
+    try {
+      if (typeof window !== 'undefined' && (window as any).env && (window as any).env[key]) {
+        return (window as any).env[key];
+      }
+    } catch (e) {
+      // window.env não disponível
+      console.debug('window.env não disponível:', e);
     }
     
     // Fallback para process.env (se disponível)
-    if (typeof process !== 'undefined' && process?.env) {
-      return process.env[key] || defaultValue;
+    try {
+      if (typeof process !== 'undefined' && process?.env && process.env[key]) {
+        return process.env[key];
+      }
+    } catch (e) {
+      // process.env não disponível
+      console.debug('process.env não disponível:', e);
     }
     
+    console.debug(`Usando valor padrão para ${key}:`, defaultValue);
     return defaultValue;
   }
 
