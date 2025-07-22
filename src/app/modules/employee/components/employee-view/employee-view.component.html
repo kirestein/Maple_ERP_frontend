@@ -99,6 +99,18 @@
       <mat-card-content>
         <div class="info-grid">
           <div class="info-item">
+            <label>Nome Completo:</label>
+            <span>{{ employee.fullName || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Nome para Crachá:</label>
+            <span>{{ employee.tagName || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Sobrenome para Crachá:</label>
+            <span>{{ employee.tagLastName || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
             <label>Data de Nascimento:</label>
             <span>{{ formatDate(employee.birthday) }}</span>
           </div>
@@ -108,7 +120,15 @@
           </div>
           <div class="info-item">
             <label>RG:</label>
-            <span>{{ employee.rg || 'N��o informado' }}</span>
+            <span>{{ employee.rg || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Órgão Emissor RG:</label>
+            <span>{{ employee.rgEmitter || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Data Emissão RG:</label>
+            <span>{{ formatDate(employee.rgEmissionDate) }}</span>
           </div>
           <div class="info-item">
             <label>Gênero:</label>
@@ -117,6 +137,10 @@
           <div class="info-item">
             <label>Estado Civil:</label>
             <span>{{ employee.maritalStatus || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Cor da Pele:</label>
+            <span>{{ employee.skinColor || 'Não informado' }}</span>
           </div>
           <div class="info-item">
             <label>Naturalidade:</label>
@@ -196,7 +220,7 @@
       <mat-card-content>
         <div class="info-grid">
           <div class="info-item">
-            <label>Cargo/Função:</label>
+            <label>Cargo/Posição:</label>
             <span>{{ employee.jobPosition || 'Não informado' }}</span>
           </div>
           <div class="info-item">
@@ -204,12 +228,20 @@
             <span>{{ employee.jobFunctions || 'Não informado' }}</span>
           </div>
           <div class="info-item">
+            <label>Departamento:</label>
+            <span>{{ employee.department || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
             <label>Data de Admissão:</label>
             <span>{{ formatDate(employee.admissionDate) }}</span>
           </div>
           <div class="info-item">
-            <label>Período:</label>
+            <label>Período de Trabalho:</label>
             <span>{{ employee.period || 'Não informado' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Vencimento do Contrato:</label>
+            <span>{{ formatDate(employee.contractExpirationDate) }}</span>
           </div>
           <div class="info-item">
             <label>Horas Diárias:</label>
@@ -227,24 +259,25 @@
             <label>Aulas Semanais:</label>
             <span>{{ employee.weeklyClasses || 'Não informado' }}</span>
           </div>
-          @if (employee.contractExpirationDate) {
           <div class="info-item">
-            <label>Vencimento do Contrato:</label>
-            <span>{{ formatDate(employee.contractExpirationDate) }}</span>
+            <label>Possui Acumulo:</label>
+            <span>{{ employee.hasAccumulate ? 'Sim' : 'Não' }}</span>
+          </div>
+          @if (employee.hasAccumulate && employee.hasAccumulateCompany) {
+          <div class="info-item">
+            <label>Empresa do Acúmulo:</label>
+            <span>{{ employee.hasAccumulateCompany }}</span>
           </div>
           }
-          @if (employee.salary) {
           <div class="info-item">
-            <label>Salário:</label>
-            <span>R$ {{ employee.salary | number:'1.2-2' }}</span>
+            <label>Status:</label>
+            <span>{{ employee.status || 'Não informado' }}</span>
           </div>
-          }
         </div>
       </mat-card-content>
     </mat-card>
 
     <!-- Documentação -->
-    @if (employee.pisPasep || employee.ctps || employee.voterTitle || employee.driversLicense) {
     <mat-card class="info-section">
       <mat-card-header>
         <mat-card-title>
@@ -272,16 +305,63 @@
             <span>{{ employee.voterTitle }}</span>
           </div>
           }
+          @if (employee.voterZone) {
+          <div class="info-item">
+            <label>Zona Eleitoral:</label>
+            <span>{{ employee.voterZone }}</span>
+          </div>
+          }
+          @if (employee.voterSection) {
+          <div class="info-item">
+            <label>Seção Eleitoral:</label>
+            <span>{{ employee.voterSection }}</span>
+          </div>
+          }
+          @if (employee.voterEmission) {
+          <div class="info-item">
+            <label>Data Emissão Título:</label>
+            <span>{{ formatDate(employee.voterEmission) }}</span>
+          </div>
+          }
+          @if (employee.militaryCertificate) {
+          <div class="info-item">
+            <label>Certificado Militar:</label>
+            <span>{{ employee.militaryCertificate }}</span>
+          </div>
+          }
+          @if (employee.driversLicense) {
+          <div class="info-item">
+            <label>Possui CNH:</label>
+            <span>{{ employee.driversLicense ? 'Sim' : 'Não' }}</span>
+          </div>
+          }
           @if (employee.driversLicense && employee.driversLicenseNumber) {
           <div class="info-item">
-            <label>CNH:</label>
-            <span>{{ employee.driversLicenseNumber }} - Categoria: {{ employee.driversLicenseCategory || 'N/A' }}</span>
+            <label>Número CNH:</label>
+            <span>{{ employee.driversLicenseNumber }}</span>
+          </div>
+          }
+          @if (employee.driversLicense && employee.driversLicenseCategory) {
+          <div class="info-item">
+            <label>Categoria CNH:</label>
+            <span>{{ employee.driversLicenseCategory }}</span>
+          </div>
+          }
+          @if (employee.driversLicense && employee.driversLicenseEmissionDate) {
+          <div class="info-item">
+            <label>Data Emissão CNH:</label>
+            <span>{{ formatDate(employee.driversLicenseEmissionDate) }}</span>
+          </div>
+          }
+          @if (employee.driversLicense && employee.driversLicenseExpirationDate) {
+          <div class="info-item">
+            <label>Data Vencimento CNH:</label>
+            <span>{{ formatDate(employee.driversLicenseExpirationDate) }}</span>
           </div>
           }
         </div>
       </mat-card-content>
     </mat-card>
-    }
 
     <!-- Informações familiares -->
     @if (employee.fatherName || employee.motherName || employee.partnerName) {
@@ -322,6 +402,205 @@
           <div class="info-item">
             <label>Data de Nascimento do Cônjuge:</label>
             <span>{{ formatDate(employee.partnerBirthday) }}</span>
+          </div>
+          }
+          @if (employee.partnerRg) {
+          <div class="info-item">
+            <label>RG do Cônjuge:</label>
+            <span>{{ employee.partnerRg }}</span>
+          </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+    }
+
+    <!-- Informações Financeiras -->
+    @if (employee.salary || employee.salaryBank || employee.familySalary) {
+    <mat-card class="info-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>account_balance</mat-icon>
+          Informações Financeiras
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          @if (employee.salary) {
+          <div class="info-item">
+            <label>Salário:</label>
+            <span>R$ {{ employee.salary | number:'1.2-2' }}</span>
+          </div>
+          }
+          @if (employee.salaryBank) {
+          <div class="info-item">
+            <label>Banco:</label>
+            <span>{{ employee.salaryBank }}</span>
+          </div>
+          }
+          @if (employee.salaryAgency) {
+          <div class="info-item">
+            <label>Agência:</label>
+            <span>{{ employee.salaryAgency }}</span>
+          </div>
+          }
+          @if (employee.salaryAccount) {
+          <div class="info-item">
+            <label>Conta:</label>
+            <span>{{ employee.salaryAccount }}</span>
+          </div>
+          }
+          @if (employee.salaryAccountType) {
+          <div class="info-item">
+            <label>Tipo de Conta:</label>
+            <span>{{ employee.salaryAccountType }}</span>
+          </div>
+          }
+          @if (employee.familySalary) {
+          <div class="info-item">
+            <label>Salário Família:</label>
+            <span>R$ {{ employee.familySalary | number:'1.2-2' }}</span>
+          </div>
+          }
+          @if (employee.parenting) {
+          <div class="info-item">
+            <label>Parentesco:</label>
+            <span>{{ employee.parenting }}</span>
+          </div>
+          }
+          @if (employee.IRPF) {
+          <div class="info-item">
+            <label>IRPF:</label>
+            <span>{{ employee.IRPF }}</span>
+          </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+    }
+
+    <!-- Benefícios -->
+    @if (employee.mealValue || employee.transport || employee.healthPlan || employee.deficiency) {
+    <mat-card class="info-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>card_giftcard</mat-icon>
+          Benefícios e Assistência
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          @if (employee.mealValue) {
+          <div class="info-item">
+            <label>Valor Refeição:</label>
+            <span>R$ {{ employee.mealValue | number:'1.2-2' }}</span>
+          </div>
+          }
+          <div class="info-item">
+            <label>Vale Transporte:</label>
+            <span>{{ employee.transport ? 'Sim' : 'Não' }}</span>
+          </div>
+          @if (employee.transport && employee.trasportType) {
+          <div class="info-item">
+            <label>Tipo de Transporte:</label>
+            <span>{{ employee.trasportType }}</span>
+          </div>
+          }
+          @if (employee.transport && employee.transportValue) {
+          <div class="info-item">
+            <label>Valor Transporte:</label>
+            <span>R$ {{ employee.transportValue | number:'1.2-2' }}</span>
+          </div>
+          }
+          @if (employee.healthPlan) {
+          <div class="info-item">
+            <label>Plano de Saúde:</label>
+            <span>{{ employee.healthPlan }}</span>
+          </div>
+          }
+          @if (employee.healthCardNumber) {
+          <div class="info-item">
+            <label>Número Cartão Saúde:</label>
+            <span>{{ employee.healthCardNumber }}</span>
+          </div>
+          }
+          <div class="info-item">
+            <label>Possui Deficiência:</label>
+            <span>{{ employee.deficiency ? 'Sim' : 'Não' }}</span>
+          </div>
+          @if (employee.deficiency && employee.deficiencyDescription) {
+          <div class="info-item full-width">
+            <label>Descrição da Deficiência:</label>
+            <span>{{ employee.deficiencyDescription }}</span>
+          </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+    }
+
+    <!-- Informações Universitárias/Estágio -->
+    @if (employee.college || employee.course || employee.ra || employee.traineeAddress) {
+    <mat-card class="info-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>school</mat-icon>
+          Informações Universitárias
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          @if (employee.college) {
+          <div class="info-item">
+            <label>Faculdade:</label>
+            <span>{{ employee.college }}</span>
+          </div>
+          }
+          @if (employee.course) {
+          <div class="info-item">
+            <label>Curso:</label>
+            <span>{{ employee.course }}</span>
+          </div>
+          }
+          @if (employee.trainingPeriod) {
+          <div class="info-item">
+            <label>Período de Estágio:</label>
+            <span>{{ employee.trainingPeriod }}</span>
+          </div>
+          }
+          @if (employee.ra) {
+          <div class="info-item">
+            <label>RA:</label>
+            <span>{{ employee.ra }}</span>
+          </div>
+          }
+          @if (employee.traineeAddress) {
+          <div class="info-item full-width">
+            <label>Endereço da Faculdade:</label>
+            <span>
+              {{ employee.traineeAddress }}
+              @if (employee.traineeAddressNumber) {
+                , {{ employee.traineeAddressNumber }}
+              }
+              @if (employee.traineeAddressComplement) {
+                , {{ employee.traineeAddressComplement }}
+              }
+              @if (employee.traineeAddressNeighborhood) {
+                <br>{{ employee.traineeAddressNeighborhood }}
+              }
+              @if (employee.traineeAddressCity || employee.traineeAddressState) {
+                <br>{{ employee.traineeAddressCity }}{{ employee.traineeAddressState ? ' - ' + employee.traineeAddressState : '' }}
+              }
+              @if (employee.collegeCep) {
+                <br>CEP: {{ employee.collegeCep }}
+              }
+            </span>
+          </div>
+          }
+          @if (employee.lifInsurancePolicy) {
+          <div class="info-item">
+            <label>Apólice Seguro de Vida:</label>
+            <span>{{ employee.lifInsurancePolicy }}</span>
           </div>
           }
         </div>
